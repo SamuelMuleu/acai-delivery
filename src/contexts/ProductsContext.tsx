@@ -1,5 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { api } from "./api/api"
+type ComplementInput = {
+  nome: string;
+  tipo: 'fruta' | 'cobertura' | 'adicional';
+  preco: number;
+  ativo?: boolean;
+};
 
 // Sample data for products
 const initialProducts = [
@@ -9,9 +16,7 @@ const initialProducts = [
     descricao: '',
     imagem: 'https://media.istockphoto.com/id/1451849749/pt/foto/acai-bowl-isolated-on-white-background.jpg?s=2048x2048&w=is&k=20&c=RaAFhasFsGgcwhw4K5wQftl-9go4hlye9D2XNh1Rz5E=',
     tamanhos: [
-      { rotulo: '300ml', preco: 12.90 },
-      { rotulo: '500ml', preco: 16.90 },
-      { rotulo: '700ml', preco: 22.90 }
+      { rotulo: '200ml', preco: 12.90 },
     ]
   },
   {
@@ -21,8 +26,7 @@ const initialProducts = [
     imagem: 'https://media.istockphoto.com/id/1451849749/pt/foto/acai-bowl-isolated-on-white-background.jpg?s=2048x2048&w=is&k=20&c=RaAFhasFsGgcwhw4K5wQftl-9go4hlye9D2XNh1Rz5E=',
     tamanhos: [
       { rotulo: '300ml', preco: 14.90 },
-      { rotulo: '500ml', preco: 18.90 },
-      { rotulo: '700ml', preco: 24.90 }
+
     ]
   },
   {
@@ -31,9 +35,8 @@ const initialProducts = [
     descricao: '',
     imagem: 'https://media.istockphoto.com/id/1451849749/pt/foto/acai-bowl-isolated-on-white-background.jpg?s=2048x2048&w=is&k=20&c=RaAFhasFsGgcwhw4K5wQftl-9go4hlye9D2XNh1Rz5E=',
     tamanhos: [
-      { rotulo: '300ml', preco: 15.90 },
-      { rotulo: '500ml', preco: 19.90 },
-      { rotulo: '700ml', preco: 25.90 }
+      { rotulo: '400ml', preco: 15.90 },
+
     ]
   },
   {
@@ -42,9 +45,8 @@ const initialProducts = [
     descricao: '',
     imagem: 'https://media.istockphoto.com/id/1451849749/pt/foto/acai-bowl-isolated-on-white-background.jpg?s=2048x2048&w=is&k=20&c=RaAFhasFsGgcwhw4K5wQftl-9go4hlye9D2XNh1Rz5E=',
     tamanhos: [
-      { rotulo: '300ml', preco: 15.90 },
-      { rotulo: '500ml', preco: 19.90 },
-      { rotulo: '700ml', preco: 25.90 }
+      { rotulo: '500ml', preco: 15.90 },
+
     ]
   },
   {
@@ -53,9 +55,8 @@ const initialProducts = [
     descricao: '',
     imagem: 'https://media.istockphoto.com/id/1451849749/pt/foto/acai-bowl-isolated-on-white-background.jpg?s=2048x2048&w=is&k=20&c=RaAFhasFsGgcwhw4K5wQftl-9go4hlye9D2XNh1Rz5E=',
     tamanhos: [
-      { rotulo: '300ml', preco: 15.90 },
-      { rotulo: '500ml', preco: 19.90 },
-      { rotulo: '700ml', preco: 25.90 }
+      { rotulo: '700ml', preco: 15.90 },
+
     ]
   },
   {
@@ -64,9 +65,8 @@ const initialProducts = [
     descricao: '',
     imagem: 'https://media.istockphoto.com/id/1451849887/pt/foto/acai-bowl-with-banana-granola-and-condensed-milk-isolated-on-white-background.jpg?s=2048x2048&w=is&k=20&c=9pu6qgE2vst7niHxKwHPu_vntShgRV2f5TXEHV5ABKo=',
     tamanhos: [
-      { rotulo: '300ml', preco: 15.90 },
-      { rotulo: '500ml', preco: 19.90 },
-      { rotulo: '700ml', preco: 25.90 }
+      { rotulo: 'Litro', preco: 15.90 },
+
     ]
   }
 ];
@@ -100,12 +100,23 @@ interface ProductsContextType {
 
 const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
 
-export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export function ProductsProvider({ children }: { children: React.ReactNode }) {
   const [products, setProducts] = useState<any[]>(initialProducts);
   const [complements, setComplements] = useState<any[]>(initialComplements);
   const [loading, setLoading] = useState(false);
 
-  // Simulate loading for demo purposes
+
+
+  const fetchComplements = async () => {
+    try {
+      const res = await api.get('/complementos');
+      setComplements(res.data);
+    } catch (error) {
+      console.error('Erro ao buscar complementos:', error);
+    }
+  };
+
+
   useEffect(() => {
     setLoading(true);
     const timer = setTimeout(() => {
@@ -148,13 +159,11 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return complements.find(complement => complement.id === id);
   };
 
-  const createComplement = (complement: any) => {
-    const newComplement = {
-      ...complement,
-      id: uuidv4()
-    };
-    setComplements(prev => [...prev, newComplement]);
-    return newComplement;
+  const createComplement = async (complement: ComplementInput) => {
+    const response = await api.post('/complementos', [complement]);
+    const savedComplement = response.data[0];
+    setComplements(prev => [...prev, savedComplement]);
+    return savedComplement;
   };
 
   const updateComplement = (id: string, updatedComplement: any) => {
@@ -165,9 +174,18 @@ export const ProductsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
   };
 
-  const deleteComplement = (id: string) => {
-    setComplements(prev => prev.filter(complement => complement.id !== id));
+  const deleteComplement = async (id: string) => {
+    try {
+      await api.delete(`/complementos/${id}`);
+      deleteComplement(id);
+    } catch (err) {
+      console.error('Erro ao deletar complemento:', err);
+    }
   };
+  useEffect(() => {
+    fetchComplements();
+  }, []);
+
 
   return (
     <ProductsContext.Provider value={{

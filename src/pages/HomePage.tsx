@@ -11,7 +11,7 @@ const HomePage: React.FC = () => {
   return (
     <div className="pb-20 min-h-screen bg-white">
       {/* Header fixo tipo app */}
-      <header className="bg-purple-700 text-white py-4 px-6 shadow-md flex justify-between items-center sticky top-0 z-50">
+      <header className="text-white py-4 px-6 shadow-md flex justify-between items-center sticky top-0 z-50">
 
 
       </header>

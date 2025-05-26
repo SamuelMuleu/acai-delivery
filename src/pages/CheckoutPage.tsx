@@ -13,6 +13,8 @@ const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [address, setAddress] = useState('');
+  const [nomeCliente, setNomeCliente] = useState('');
+  const [telefone, setTelefone] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'Pix' | 'Dinheiro' | 'Cartão'>('Pix');
   const [changeFor, setChangeFor] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,6 +27,16 @@ const CheckoutPage: React.FC = () => {
 
     // Validate form
     const errors: { [key: string]: string } = {};
+
+
+    if (!nomeCliente.trim()) {
+      errors.nomeCliente = 'Nome do cliente é obrigatório';
+    }
+    if (!telefone.trim()) {
+      errors.telefone = 'Telefone é obrigatório';
+    } else if (!/^\d{10,11}$/.test(telefone.trim().replace(/\D/g, ''))) {
+      errors.telefone = 'Telefone inválido (apenas números, 10 ou 11 dígitos)';
+    }
 
     if (!address.trim()) {
       errors.address = 'Endereço é obrigatório';
@@ -51,7 +63,9 @@ const CheckoutPage: React.FC = () => {
         })),
         address,
         paymentMethod,
-        changeFor: paymentMethod === 'Dinheiro' ? changeFor : null
+        changeFor: paymentMethod === 'Dinheiro' ? changeFor : null,
+        nomeCliente: nomeCliente, // <--- ADICIONE ESTA LINHA
+        telefone: telefone        // <--- ADICIONE ESTA LINHA
       });
 
       clearCart();
@@ -59,6 +73,7 @@ const CheckoutPage: React.FC = () => {
     } catch (error) {
       console.error('Failed to create order:', error);
       setIsSubmitting(false);
+      setFormErrors({ general: 'Erro ao criar pedido. Tente novamente.' });
     }
   };
 
@@ -111,7 +126,46 @@ const CheckoutPage: React.FC = () => {
             </div>
           </div>
 
+
+
           <form onSubmit={handleSubmit}>
+
+            <div className="mb-4">
+              <label htmlFor="nomeCliente" className="block text-sm font-medium text-gray-700 mb-1">
+                Nome Completo
+              </label>
+              <input
+                type="text"
+                id="nomeCliente"
+                value={nomeCliente}
+                onChange={(e) => setNomeCliente(e.target.value)}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${formErrors.nomeCliente ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                placeholder="Seu nome completo"
+              />
+              {formErrors.nomeCliente && (
+                <p className="mt-1 text-sm text-red-500">{formErrors.nomeCliente}</p>
+              )}
+            </div>
+
+            {/* Campo Telefone */}
+            <div className="mb-4">
+              <label htmlFor="telefone" className="block text-sm font-medium text-gray-700 mb-1">
+                Telefone (com DDD)
+              </label>
+              <input
+                type="tel" // Use type="tel" para melhor usabilidade em mobile
+                id="telefone"
+                value={telefone}
+                onChange={(e) => setTelefone(e.target.value)}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${formErrors.telefone ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                placeholder="(XX) XXXXX-XXXX"
+              />
+              {formErrors.telefone && (
+                <p className="mt-1 text-sm text-red-500">{formErrors.telefone}</p>
+              )}
+            </div>
             <div className="bg-white rounded-xl shadow-md p-6 mb-6">
               <h2 className="text-xl font-semibold mb-4">Endereço de Entrega</h2>
               <AddressForm
@@ -120,6 +174,8 @@ const CheckoutPage: React.FC = () => {
                 error={formErrors.address}
               />
             </div>
+
+
 
             <div className="bg-white rounded-xl shadow-md p-6">
               <h2 className="text-xl font-semibold mb-4">Método de Pagamento</h2>

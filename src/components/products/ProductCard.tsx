@@ -40,12 +40,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
         <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.descricao}</p>
         <div className="flex justify-between items-center">
           <div className="flex items-baseline">
-            <span className="text-sm text-gray-500">A partir de</span>
+            <span className="text-sm text-gray-500"></span>
             <span className="ml-1 font-bold text-purple-700">R$ {minPrice.toFixed(2)}</span>
           </div>
-          <div className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
-            {product.tamanhos.length} tamanhos
-          </div>
+
         </div>
       </div>
     </div>

@@ -12,9 +12,9 @@ interface ComplementsListProps {
 
 
 const COMPLEMENT_LIMITS: Record<string, number> = {
-  'Fruta': 1,
-  'Cobertura': 1,
-  'Adicional': 3,
+  'fruta': 1,
+  'cobertura': 1,
+  'adicional': 3,
 
 };
 

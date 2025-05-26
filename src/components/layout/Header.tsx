@@ -4,7 +4,7 @@ import { ShoppingBag, Menu, X } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 
-const Header: React.FC = () => {
+export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { cart } = useCart();
@@ -29,11 +29,11 @@ const Header: React.FC = () => {
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-white shadow-md' : 'bg-transparent'
+      className={`sticky top-0 z-50 transition-all duration-300  ${isScrolled ? 'bg-white shadow-md' : 'bg-transparent'
         }`}
     >
 
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-4 py-4 ">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center">
 
@@ -82,7 +82,7 @@ const Header: React.FC = () => {
 
 
           {/* Mobile Menu Button */}
-          <div className="flex items-center space-x-4 md:hidden">
+          <div className="flex items-center space-x-4 md:hidden ">
             <Link
               to="/checkout"
               className="relative flex items-center"
@@ -106,7 +106,7 @@ const Header: React.FC = () => {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white shadow-lg animate-fadeIn">
+        <div className="md:hidden bg-white shadow-lg animate-fadeIn ">
           <div className="container mx-auto px-4 py-4">
             <nav className="flex flex-col space-y-4">
               <Link to="/" className="text-gray-800 py-2 border-b border-gray-100">
@@ -140,4 +140,3 @@ const Header: React.FC = () => {
   );
 };
 
-export default Header;
