@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, Menu, X } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
+import logo from "../../assets/logo.png"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -36,8 +37,8 @@ export function Header() {
       <div className="container mx-auto px-4 py-4 ">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center">
+            <img src={logo} alt="Logo da marca" className="w-20 h-20  mt-4 object-contain" />
 
-            <span className="text-purple-700 font-bold text-2xl">Açaí Delight</span>
           </Link>
 
 
