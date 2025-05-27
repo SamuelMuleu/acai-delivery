@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface User {
   id: string;
@@ -14,22 +14,27 @@ interface AuthContextType {
   logout: () => void;
 }
 
+
+export interface AuthProviderProps {
+  children: ReactNode;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Demo admin user
+
 const adminUser = {
   id: '1',
   name: 'Admin',
-  email: 'admin@example.com',
+  email: 'admin@email.com',
   password: 'admin123',
   isAdmin: true
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is already logged in
+
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
@@ -53,7 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             email: adminUser.email,
             isAdmin: adminUser.isAdmin
           };
-          
+
           setUser(loggedInUser);
           localStorage.setItem('user', JSON.stringify(loggedInUser));
           resolve();

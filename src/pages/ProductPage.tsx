@@ -1,48 +1,77 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ShoppingBag, Check } from 'lucide-react';
-import { useProducts } from '../contexts/ProductsContext';
+import { Complement, Product, useProducts } from '../contexts/ProductsContext';
 import { useCart } from '../contexts/CartContext';
-import ComplementsList from '../components/products/ComplementsList';
+import { ComplementsList } from '../components/products/ComplementsList';
+import { Tamanho } from '../contexts/OrderContext';
+import { api } from '../contexts/api/api';
 
-const ProductPage: React.FC = () => {
+export const ProductPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getProductById, getComplements, loading } = useProducts();
   const { addToCart } = useCart();
 
-  const [product, setProduct] = useState<any>(null);
-  const [complements, setComplements] = useState<any[]>([]);
+  const [product, setProduct] = useState<Product>();
+  const [complements, setComplements] = useState<Complement[]>();
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [selectedComplements, setSelectedComplements] = useState<string[]>([]);
   const [addedToCart, setAddedToCart] = useState(false);
 
+
+
+
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const fetchProduct = async () => {
+      try {
+        const response = await api.get(`/produtos/${id}`);
+        setProduct(response.data);
+        if (response.data?.tamanhos?.length > 0) {
+          setSelectedSize(response.data.tamanhos[0].nome);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar produto:', error);
+      }
+    };
+
+
+    if (id) {
+      fetchProduct();
+      setComplements(getComplements());
+    }
+  }, [id, getComplements]);
+
+  useEffect(() => {
+
 
     if (id) {
       const productData = getProductById(id);
       setProduct(productData);
 
       if (productData && productData.tamanhos.length > 0) {
-        setSelectedSize(productData.tamanhos[0].rotulo);
+        setSelectedSize(productData.tamanhos[0].nome);
       }
 
       setComplements(getComplements());
+
     }
   }, [id, getProductById, getComplements]);
+
+
+
 
   const handleAddToCart = () => {
     if (!product || !selectedSize) return;
 
-    const size = product.tamanhos.find((t: any) => t.rotulo === selectedSize);
+    const size = product.tamanhos.find((t: Tamanho) => t.nome === selectedSize);
 
     addToCart({
       productId: product.id,
       name: product.nome,
       image: product.imagem,
       size: selectedSize,
-      price: size.preco,
+      price: size?.preco || 0,
       complements: selectedComplements,
       quantity: 1
     });
@@ -97,7 +126,7 @@ const ProductPage: React.FC = () => {
 
 
             <ComplementsList
-              complements={complements}
+              complements={complements ?? []}
               selectedComplements={selectedComplements}
               toggleComplement={toggleComplement}
             />
@@ -107,8 +136,8 @@ const ProductPage: React.FC = () => {
                 onClick={handleAddToCart}
                 disabled={addedToCart}
                 className={`w-full rounded-lg py-3 px-6 flex items-center justify-center font-medium text-white transition-all ${addedToCart
-                    ? 'bg-green-500'
-                    : 'bg-purple-600 hover:bg-purple-700'
+                  ? 'bg-green-500'
+                  : 'bg-purple-600 hover:bg-purple-700'
                   }`}
               >
                 {addedToCart ? (

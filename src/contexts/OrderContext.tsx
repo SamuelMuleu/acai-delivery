@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useProducts } from './ProductsContext';
 import axios from 'axios';
+import { BASE_URL } from './api/api';
 
 
 interface OrderItem {
@@ -20,7 +21,7 @@ interface ProductFromContext {
 
 }
 
-interface PreparedItem {
+export interface PreparedItem {
   productId: string;
   name: string;
   image: string;
@@ -31,7 +32,7 @@ interface PreparedItem {
 }
 
 
-interface Order {
+export interface Order {
   id: string;
   trackingCode: string;
   items: PreparedItem[];
@@ -51,8 +52,8 @@ interface OrderData {
   telefone: string;
 }
 
-interface Tamanho {
-  rotulo: string;
+export interface Tamanho {
+  nome: string;
   preco: number;
 
 }
@@ -89,7 +90,7 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         throw new Error(`Produto com ID ${item.productId} não encontrado.`);
       }
 
-      const size = product.tamanhos.find((t: Tamanho) => t.rotulo === item.size);
+      const size = product.tamanhos.find((t: Tamanho) => t.nome === item.size);
 
 
       if (!size) {
@@ -122,7 +123,7 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     };
 
     try {
-      await axios.post('https://api-acai-delivey.onrender.com/pedidos', {
+      await axios.post(`${BASE_URL}`, {
         nomeCliente: nomeCliente,
         telefone: telefone,
         endereco: address,

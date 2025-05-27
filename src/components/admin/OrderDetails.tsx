@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
-import { useOrder } from '../../contexts/OrderContext';
+import { Order, PreparedItem, useOrder } from '../../contexts/OrderContext';
 import OrderStatusTracker from '../orders/OrderStatusTracker';
 
 const OrderDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getOrderById, updateOrderStatus } = useOrder();
-  const [order, setOrder] = useState<any>(null);
+  const [order, setOrder] = useState<Order | null>(null);
+
 
   console.log(order)
   useEffect(() => {
@@ -18,10 +19,13 @@ const OrderDetails: React.FC = () => {
     }
   }, [id, getOrderById]);
 
-  const handleStatusChange = (newStatus: string) => {
+  const handleStatusChange = (newStatus: Order['status']) => {
     if (id) {
       updateOrderStatus(id, newStatus);
-      setOrder((prev: any) => ({ ...prev, status: newStatus }));
+      setOrder((prev) => {
+        if (!prev) return null;
+        return { ...prev, status: newStatus };
+      });
     }
   };
 
@@ -61,7 +65,7 @@ const OrderDetails: React.FC = () => {
               </label>
               <select
                 value={order.status}
-                onChange={(e) => handleStatusChange(e.target.value)}
+                onChange={(e) => handleStatusChange(e.target.value as Order['status'])}
                 className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
                 <option value="Pendente">Pendente</option>
@@ -83,7 +87,7 @@ const OrderDetails: React.FC = () => {
               <div className="bg-gray-50 rounded-lg p-4">
                 <h3 className="font-medium mb-2">Itens</h3>
                 <div className="space-y-3">
-                  {order.items.map((item: any, index: number) => (
+                  {order.items.map((item: PreparedItem, index: number) => (
                     <div key={index} className="flex justify-between">
                       <div>
                         <div className="font-medium">{item.quantity}x {item.name} ({item.size})</div>

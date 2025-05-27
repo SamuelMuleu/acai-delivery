@@ -1,5 +1,8 @@
 import axios from 'axios';
 
 export const api = axios.create({
-    baseURL: 'https://api-acai-delivey.onrender.com', // sua API pública
+    baseURL: 'https://api-acai-delivey.onrender.com',
+    //  baseURL: 'http://localhost:3000/',
+
 });
+export const BASE_URL = 'https://api-acai-delivey.onrender.com';

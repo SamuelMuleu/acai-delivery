@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 interface ComplementsListProps {
   complements: Array<{
@@ -18,11 +18,11 @@ const COMPLEMENT_LIMITS: Record<string, number> = {
 
 };
 
-const ComplementsList: React.FC<ComplementsListProps> = ({
+export const ComplementsList = ({
   complements,
   selectedComplements,
   toggleComplement
-}) => {
+}: ComplementsListProps) => {
   const [warnings, setWarnings] = useState<Record<string, string>>({});
 
   // Agrupa complementos por tipo e calcula quantos estão selecionados em cada tipo
@@ -136,4 +136,3 @@ const ComplementsList: React.FC<ComplementsListProps> = ({
   );
 };
 
-export default ComplementsList;

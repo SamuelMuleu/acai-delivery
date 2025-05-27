@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Edit, Trash2, Plus } from 'lucide-react';
 import { useProducts } from '../../contexts/ProductsContext';
 
-const ComplementsList: React.FC = () => {
+export const ComplementsList = () => {
   const { getComplements, deleteComplement } = useProducts();
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const complements = getComplements();
+  const complements = getComplements() || [];
   const navigate = useNavigate();
 
   const handleDelete = (id: string) => {
@@ -53,14 +53,14 @@ const ComplementsList: React.FC = () => {
               <div className="bg-purple-50 py-3 px-6 border-b">
                 <h2 className="font-semibold text-purple-800">{tipo}</h2>
               </div>
-              
+
               <div className="p-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {items.map((complement) => (
                     <div key={complement.id} className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
                       <div className="flex justify-between items-start">
                         <h3 className="font-medium">{complement.nome}</h3>
-                        
+
                         <div className="flex space-x-1">
                           <button
                             onClick={() => navigate(`/admin/complements/edit/${complement.id}`)}
@@ -68,7 +68,7 @@ const ComplementsList: React.FC = () => {
                           >
                             <Edit size={16} />
                           </button>
-                          
+
                           {deleteConfirm === complement.id ? (
                             <div className="flex items-center space-x-1">
                               <button
@@ -105,5 +105,3 @@ const ComplementsList: React.FC = () => {
     </div>
   );
 };
-
-export default ComplementsList;

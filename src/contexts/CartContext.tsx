@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { AuthProviderProps } from './AuthContext';
 
 interface CartItem {
   productId: string;
@@ -20,10 +21,12 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const CartProvider = ({ children }: AuthProviderProps) => {
+
+
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  // Load cart from localStorage on initial render
+
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
@@ -35,7 +38,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Save cart to localStorage whenever it changes
+
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
@@ -53,12 +56,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const existingItemIndex = findCartItemIndex(item);
 
     if (existingItemIndex !== -1) {
-      // Update quantity if item already exists
+
       const newCart = [...cart];
       newCart[existingItemIndex].quantity += item.quantity;
       setCart(newCart);
     } else {
-      // Add new item
+
       setCart(prev => [...prev, item]);
     }
   };

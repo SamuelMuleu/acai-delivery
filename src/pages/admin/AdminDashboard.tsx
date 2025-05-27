@@ -5,8 +5,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import OrdersList from '../../components/admin/OrdersList';
 import ProductsList from '../../components/admin/ProductsList';
 import ProductForm from '../../components/admin/ProductForm';
-import ComplementsList from '../../components/admin/ComplementsList';
-import ComplementForm from '../../components/admin/ComplementForm';
+import { ComplementsList } from '../../components/admin/ComplementsList';
+import { ComplementForm } from '../../components/admin/ComplementForm';
 import OrderDetails from '../../components/admin/OrderDetails';
 
 const AdminDashboard: React.FC = () => {
@@ -19,9 +19,9 @@ const AdminDashboard: React.FC = () => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
-  const NavItem: React.FC<{ 
-    icon: React.ReactNode; 
-    text: string; 
+  const NavItem: React.FC<{
+    icon: React.ReactNode;
+    text: string;
     path: string;
     onClick?: () => void;
   }> = ({ icon, text, path, onClick }) => (
@@ -34,11 +34,10 @@ const AdminDashboard: React.FC = () => {
           setIsMobileMenuOpen(false);
         }
       }}
-      className={`flex items-center space-x-3 py-3 px-4 rounded-lg transition-colors w-full ${
-        isActive(path)
-          ? 'bg-purple-100 text-purple-700'
-          : 'hover:bg-gray-100 text-gray-700'
-      }`}
+      className={`flex items-center space-x-3 py-3 px-4 rounded-lg transition-colors w-full ${isActive(path)
+        ? 'bg-purple-100 text-purple-700'
+        : 'hover:bg-gray-100 text-gray-700'
+        }`}
     >
       {icon}
       <span>{text}</span>
@@ -54,11 +53,11 @@ const AdminDashboard: React.FC = () => {
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           className="p-2 rounded-lg hover:bg-gray-100"
         >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            className="h-6 w-6 text-gray-700" 
-            fill="none" 
-            viewBox="0 0 24 24" 
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6 text-gray-700"
+            fill="none"
+            viewBox="0 0 24 24"
             stroke="currentColor"
           >
             {isMobileMenuOpen ? (
@@ -74,30 +73,30 @@ const AdminDashboard: React.FC = () => {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white shadow-md animate-fadeIn">
           <div className="py-3 px-4 space-y-1">
-            <NavItem 
-              icon={<ShoppingBag size={20} />} 
-              text="Pedidos" 
-              path="/admin" 
+            <NavItem
+              icon={<ShoppingBag size={20} />}
+              text="Pedidos"
+              path="/admin"
             />
-            <NavItem 
-              icon={<Package size={20} />} 
-              text="Produtos" 
-              path="/admin/products" 
+            <NavItem
+              icon={<Package size={20} />}
+              text="Produtos"
+              path="/admin/products"
             />
-            <NavItem 
-              icon={<Package size={20} />} 
-              text="Complementos" 
-              path="/admin/complements" 
+            <NavItem
+              icon={<Package size={20} />}
+              text="Complementos"
+              path="/admin/complements"
             />
-            <NavItem 
-              icon={<Users size={20} />} 
-              text="Usuários" 
-              path="/admin/users" 
+            <NavItem
+              icon={<Users size={20} />}
+              text="Usuários"
+              path="/admin/users"
             />
-            <NavItem 
-              icon={<LogOut size={20} />} 
-              text="Sair" 
-              path="/admin" 
+            <NavItem
+              icon={<LogOut size={20} />}
+              text="Sair"
+              path="/admin"
               onClick={logout}
             />
           </div>
@@ -113,30 +112,30 @@ const AdminDashboard: React.FC = () => {
               <h1 className="text-xl font-bold text-gray-800">Admin Panel</h1>
             </div>
           </div>
-          
+
           <nav className="flex-1 p-5 space-y-2">
-            <NavItem 
-              icon={<ShoppingBag size={20} />} 
-              text="Pedidos" 
-              path="/admin" 
+            <NavItem
+              icon={<ShoppingBag size={20} />}
+              text="Pedidos"
+              path="/admin"
             />
-            <NavItem 
-              icon={<Package size={20} />} 
-              text="Produtos" 
-              path="/admin/products" 
+            <NavItem
+              icon={<Package size={20} />}
+              text="Produtos"
+              path="/admin/products"
             />
-            <NavItem 
-              icon={<Package size={20} />} 
-              text="Complementos" 
-              path="/admin/complements" 
+            <NavItem
+              icon={<Package size={20} />}
+              text="Complementos"
+              path="/admin/complements"
             />
-            <NavItem 
-              icon={<Users size={20} />} 
-              text="Usuários" 
-              path="/admin/users" 
+            <NavItem
+              icon={<Users size={20} />}
+              text="Usuários"
+              path="/admin/users"
             />
           </nav>
-          
+
           <div className="p-5 border-t">
             <button
               onClick={logout}
@@ -147,7 +146,7 @@ const AdminDashboard: React.FC = () => {
             </button>
           </div>
         </aside>
-        
+
         {/* Main Content */}
         <div className="flex-1 p-6">
           <Routes>

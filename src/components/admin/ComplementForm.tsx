@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
-import { useProducts } from '../../contexts/ProductsContext';
+import { useProducts, ComplementInput } from '../../contexts/ProductsContext';
 import axios from 'axios';
 
 
 
-const ComplementForm: React.FC = () => {
+export const ComplementForm = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   // As funções createComplement e updateComplement são obtidas do contexto
   const { getComplementById, createComplement, updateComplement } = useProducts();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ComplementInput>({
     nome: '',
-    tipo: 'Fruta',
-    preco: 0, // Campo de preço adicionado novamente
+    tipo: 'fruta', // agora o TS entende que é válido
+    preco: 0,
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -99,7 +99,7 @@ const ComplementForm: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-  console.log('Dados enviados:', formData);
+
 
 
   return (
@@ -209,4 +209,3 @@ const ComplementForm: React.FC = () => {
   );
 };
 
-export default ComplementForm;

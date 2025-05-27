@@ -7,7 +7,7 @@ interface ProductCardProps {
     descricao: string;
     imagem: string;
     tamanhos: Array<{
-      rotulo: string;
+      nome: string;
       preco: number;
     }>;
   };

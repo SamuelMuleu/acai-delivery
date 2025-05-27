@@ -1,108 +1,69 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { api } from "./api/api"
-type ComplementInput = {
+
+export type ComplementInput = {
   nome: string;
   tipo: 'fruta' | 'cobertura' | 'adicional';
   preco: number;
   ativo?: boolean;
 };
 
-// Sample data for products
-const initialProducts = [
-  {
-    id: '1',
-    nome: '200ml',
-    descricao: '',
-    imagem: 'https://media.istockphoto.com/id/1451849749/pt/foto/acai-bowl-isolated-on-white-background.jpg?s=2048x2048&w=is&k=20&c=RaAFhasFsGgcwhw4K5wQftl-9go4hlye9D2XNh1Rz5E=',
-    tamanhos: [
-      { rotulo: '200ml', preco: 12.90 },
-    ]
-  },
-  {
-    id: '2',
-    nome: '300ml',
-    descricao: '',
-    imagem: 'https://media.istockphoto.com/id/1451849749/pt/foto/acai-bowl-isolated-on-white-background.jpg?s=2048x2048&w=is&k=20&c=RaAFhasFsGgcwhw4K5wQftl-9go4hlye9D2XNh1Rz5E=',
-    tamanhos: [
-      { rotulo: '300ml', preco: 14.90 },
 
-    ]
-  },
-  {
-    id: '3',
-    nome: '400ml',
-    descricao: '',
-    imagem: 'https://media.istockphoto.com/id/1451849749/pt/foto/acai-bowl-isolated-on-white-background.jpg?s=2048x2048&w=is&k=20&c=RaAFhasFsGgcwhw4K5wQftl-9go4hlye9D2XNh1Rz5E=',
-    tamanhos: [
-      { rotulo: '400ml', preco: 15.90 },
+export interface Product {
+  id: string;
+  nome: string;
+  descricao: string;
+  imagem: string;
+  tamanhos: {
+    nome: string;
+    preco: number;
+  }[];
+}
 
-    ]
-  },
-  {
-    id: '4',
-    nome: '500ml',
-    descricao: '',
-    imagem: 'https://media.istockphoto.com/id/1451849749/pt/foto/acai-bowl-isolated-on-white-background.jpg?s=2048x2048&w=is&k=20&c=RaAFhasFsGgcwhw4K5wQftl-9go4hlye9D2XNh1Rz5E=',
-    tamanhos: [
-      { rotulo: '500ml', preco: 15.90 },
+export interface Complement {
+  id: string;
+  nome: string;
+  tipo: 'fruta' | 'cobertura' | 'adicional';
+  preco: number;
+  ativo?: boolean;
+}
 
-    ]
-  },
-  {
-    id: '5',
-    nome: '700ml',
-    descricao: '',
-    imagem: 'https://media.istockphoto.com/id/1451849749/pt/foto/acai-bowl-isolated-on-white-background.jpg?s=2048x2048&w=is&k=20&c=RaAFhasFsGgcwhw4K5wQftl-9go4hlye9D2XNh1Rz5E=',
-    tamanhos: [
-      { rotulo: '700ml', preco: 15.90 },
 
-    ]
-  },
-  {
-    id: '6',
-    nome: '1 Litro',
-    descricao: '',
-    imagem: 'https://media.istockphoto.com/id/1451849887/pt/foto/acai-bowl-with-banana-granola-and-condensed-milk-isolated-on-white-background.jpg?s=2048x2048&w=is&k=20&c=9pu6qgE2vst7niHxKwHPu_vntShgRV2f5TXEHV5ABKo=',
-    tamanhos: [
-      { rotulo: 'Litro', preco: 15.90 },
-
-    ]
-  }
-];
-
-// Sample data for complements
-export const initialComplements = [
-  { id: '1', nome: 'Morango', tipo: 'Fruta' },
-  { id: '2', nome: 'Banana', tipo: 'Fruta' },
-  { id: '3', nome: 'Kiwi', tipo: 'Fruta' },
-  { id: '4', nome: 'Leite Condensado', tipo: 'Cobertura' },
-  { id: '5', nome: 'Chocolate', tipo: 'Cobertura' },
-  { id: '6', nome: 'Mel', tipo: 'Cobertura' },
-  { id: '7', nome: 'Granola', tipo: 'Adicional' },
-  { id: '8', nome: 'Paçoca', tipo: 'Adicional' },
-  { id: '9', nome: 'Amendoim', tipo: 'Adicional' }
-];
+export interface InitialProducts {
+  id: string;
+  nome: string;
+  descricao: string;
+  imagem: string;
+  tamanhos: {
+    nome: string;
+    preco: number;
+  }[];
+}
 
 interface ProductsContextType {
-  products: any[];
+  products: Product[];
   loading: boolean;
-  getProductById: (id: string) => any;
-  createProduct: (product: any) => void;
-  updateProduct: (id: string, product: any) => void;
+  complements: Complement[];
+  getProductById: (id: string) => Product | undefined;
+  createProduct: (data: FormData) => Promise<Product>;
+  updateProduct: (id: string, data: FormData) => Promise<Product>;
   deleteProduct: (id: string) => void;
-  getComplements: () => any[];
-  getComplementById: (id: string) => any;
-  createComplement: (complement: any) => void;
-  updateComplement: (id: string, complement: any) => void;
-  deleteComplement: (id: string) => void;
+
+  getComplements: () => Complement[] | undefined;
+  getComplementById: (id: string) => Complement | undefined;
+  createComplement: (complement: ComplementInput) => Promise<Complement>;
+  updateComplement: (id: string, complement: Partial<Complement>) => void;
+  deleteComplement: (id: string) => Promise<void>;
 }
 
 const ProductsContext = createContext<ProductsContextType | undefined>(undefined);
 
 export function ProductsProvider({ children }: { children: React.ReactNode }) {
-  const [products, setProducts] = useState<any[]>(initialProducts);
-  const [complements, setComplements] = useState<any[]>(initialComplements);
+  const [products, setProducts] = useState<InitialProducts[]>([]);
+
+  const [complements, setComplements] = useState<Complement[]>([]);
+
+
   const [loading, setLoading] = useState(false);
 
 
@@ -115,6 +76,15 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
       console.error('Erro ao buscar complementos:', error);
     }
   };
+
+  const fetchProducts = async () => {
+    try {
+      const response = await api.get('/produtos');
+      setProducts(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar Produtos:', error);
+    }
+  }
 
 
   useEffect(() => {
@@ -129,26 +99,41 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
   const getProductById = (id: string) => {
     return products.find(product => product.id === id);
   };
-
-  const createProduct = (product: any) => {
-    const newProduct = {
-      ...product,
-      id: uuidv4()
-    };
-    setProducts(prev => [...prev, newProduct]);
-    return newProduct;
+  const createProduct = async (data: FormData): Promise<Product> => {
+    const response = await api.post('/produtos', data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
   };
 
-  const updateProduct = (id: string, updatedProduct: any) => {
-    setProducts(prev =>
-      prev.map(product =>
-        product.id === id ? { ...updatedProduct, id } : product
-      )
-    );
-  };
 
+
+  const updateProduct = async (id: string, formData: FormData): Promise<Product> => {
+    try {
+      const response = await api.put(`/produtos/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao atualizar produto:', error);
+      throw error;
+    }
+  };
   const deleteProduct = (id: string) => {
+    api.delete(`/produtos/${id}`)
+      .then(() => {
+        console.log('Produto deletado com sucesso');
+      })
+      .catch((error) => {
+        console.error('Erro ao deletar produto:', error);
+      });
+
+    // Atualiza o estado local para remover o produto deletado
     setProducts(prev => prev.filter(product => product.id !== id));
+
+
   };
 
   const getComplements = () => {
@@ -166,10 +151,10 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     return savedComplement;
   };
 
-  const updateComplement = (id: string, updatedComplement: any) => {
+  const updateComplement = (id: string, updatedComplement: Partial<Complement>) => {
     setComplements(prev =>
       prev.map(complement =>
-        complement.id === id ? { ...updatedComplement, id } : complement
+        complement.id === id ? { ...complement, ...updatedComplement } : complement
       )
     );
   };
@@ -177,13 +162,14 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
   const deleteComplement = async (id: string) => {
     try {
       await api.delete(`/complementos/${id}`);
-      deleteComplement(id);
+      setComplements(prev => prev?.filter(complement => complement.id !== id));
     } catch (err) {
       console.error('Erro ao deletar complemento:', err);
     }
   };
   useEffect(() => {
     fetchComplements();
+    fetchProducts();
   }, []);
 
 
@@ -191,6 +177,7 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     <ProductsContext.Provider value={{
       products,
       loading,
+      complements,
       getProductById,
       createProduct,
       updateProduct,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Trash2, Plus, Minus } from 'lucide-react';
-import { initialComplements } from '../../contexts/ProductsContext';
+import { useProducts } from '../../contexts/ProductsContext';
 
 
 interface CartItemProps {
@@ -19,9 +19,11 @@ interface CartItemProps {
 
 const CartItem: React.FC<CartItemProps> = ({ item, onRemove, onUpdateQuantity }) => {
 
+  const { getComplementById } = useProducts();
+
   const getComplementName = (id: string) => {
-    const complement = initialComplements.find(c => c.id === id);
-    return complement ? complement.nome : id; // Retorna o ID se não encontrar o complemento
+    const complement = getComplementById(id);
+    return complement ? complement.nome : id;
   };
 
   return (

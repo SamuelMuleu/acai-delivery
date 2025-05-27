@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Edit, Trash2, Plus } from 'lucide-react';
 import { useProducts } from '../../contexts/ProductsContext';
 
+
+
 const ProductsList: React.FC = () => {
   const { products, deleteProduct } = useProducts();
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -12,6 +14,7 @@ const ProductsList: React.FC = () => {
     deleteProduct(id);
     setDeleteConfirm(null);
   };
+  console.log(products)
 
   return (
     <div>
@@ -41,22 +44,20 @@ const ProductsList: React.FC = () => {
           {products.map((product) => (
             <div key={product.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
               <div className="h-48 overflow-hidden">
-                <img 
-                  src={product.imagem} 
-                  alt={product.nome} 
+                <img
+
+                  src={product.imagem}
+                  alt={product.nome}
                   className="w-full h-full object-cover"
                 />
               </div>
-              
+
               <div className="p-4">
                 <h3 className="font-bold text-lg mb-2">{product.nome}</h3>
                 <p className="text-gray-600 text-sm mb-4 line-clamp-2">{product.descricao}</p>
-                
+
                 <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-500">
-                    {product.tamanhos.length} tamanhos disponíveis
-                  </div>
-                  
+
                   <div className="flex space-x-2">
                     <button
                       onClick={() => navigate(`/admin/products/edit/${product.id}`)}
@@ -64,7 +65,7 @@ const ProductsList: React.FC = () => {
                     >
                       <Edit size={18} />
                     </button>
-                    
+
                     {deleteConfirm === product.id ? (
                       <div className="flex items-center space-x-1">
                         <button
