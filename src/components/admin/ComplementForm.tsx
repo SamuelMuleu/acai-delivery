@@ -128,7 +128,7 @@ export const ComplementForm = () => {
                 type="text"
                 id="nome"
                 name="nome"
-                value={formData.nome || ''}
+                value={formData.nome}
                 onChange={handleChange}
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${errors.nome ? 'border-red-500' : 'border-gray-300'
                   }`}
