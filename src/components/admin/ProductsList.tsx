@@ -1,25 +1,33 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Edit, Trash2, Plus } from 'lucide-react';
 import { useProducts } from '../../contexts/ProductsContext';
 
 
 
-const ProductsList: React.FC = () => {
-  const { products, deleteProduct } = useProducts();
+export const ProductsList = () => {
+  const { products, deleteProduct, fetchProducts } = useProducts();
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleDelete = (id: string) => {
     deleteProduct(id);
     setDeleteConfirm(null);
   };
-  console.log(products)
+
+
+  useEffect(() => {
+    fetchProducts();
+  }, [location.key, fetchProducts]);
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Gerenciar Produtos</h1>
+      <div className="flex justify-center items-center mb-6">
+        <h1 className="text-xl font-bold text-gray-800">Gerenciar Produtos</h1>
+
+      </div>
+      <div className='flex justify-center'>
         <button
           onClick={() => navigate('/admin/products/new')}
           className="flex items-center bg-purple-600 text-white hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors"
@@ -100,4 +108,3 @@ const ProductsList: React.FC = () => {
   );
 };
 
-export default ProductsList;

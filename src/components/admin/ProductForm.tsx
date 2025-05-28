@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Plus, Trash2 } from 'lucide-react';
 import { useProducts } from '../../contexts/ProductsContext';
 import { api } from '../../contexts/api/api';
 
-const ProductForm: React.FC = () => {
+
+export const ProductForm = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { createProduct, updateProduct, getComplements } = useProducts();
@@ -23,17 +24,17 @@ const ProductForm: React.FC = () => {
   const [previewImage, setPreviewImage] = useState<string>('');
 
 
+  const fetchProduct = useCallback(async () => {
+    if (!id) return;
+    try {
+      const response = await api.get(`/produtos/${id}`);
+      setFormData(response.data);
+      setPreviewImage(response.data.imagem);
+    } catch (error) {
+      console.error('Erro ao buscar produto:', error);
+    }
+  }, [id])
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const response = await api.get(`/produtos/${id}`);
-        setFormData(response.data);
-        setPreviewImage(response.data.imagem)
-
-      } catch (error) {
-        console.error('Erro ao buscar produto:', error);
-      }
-    };
 
 
     if (id) {
@@ -41,7 +42,7 @@ const ProductForm: React.FC = () => {
 
 
     }
-  }, [id, getComplements]);
+  }, [id, getComplements, fetchProduct]);
 
 
 
@@ -81,7 +82,7 @@ const ProductForm: React.FC = () => {
     if (!formData.descricao.trim()) {
       newErrors.descricao = 'Descrição é obrigatória';
     }
-    if (!file) {
+    if (!file && !previewImage) {
       newErrors.imagem = 'Imagem é obrigatória';
     }
 
@@ -144,7 +145,7 @@ const ProductForm: React.FC = () => {
 
         await createProduct(data);
       }
-
+      await fetchProduct()
       navigate('/admin/products');
     } catch (error) {
       console.error('Failed to save product:', error);
@@ -217,10 +218,10 @@ const ProductForm: React.FC = () => {
                 onChange={e => {
                   const selectedFile = e.target.files?.[0];
                   if (selectedFile) {
-                    setFile(selectedFile); // Guarda o File real
+                    setFile(selectedFile);
 
-                    // Opcional: se quiser mostrar o preview, pode guardar isso em outro estado, tipo:
-                    setPreviewImage(URL.createObjectURL(selectedFile)); // Preview só pro frontend
+
+                    setPreviewImage(URL.createObjectURL(selectedFile));
 
                   }
                 }
@@ -330,5 +331,3 @@ const ProductForm: React.FC = () => {
     </div>
   );
 };
-
-export default ProductForm;

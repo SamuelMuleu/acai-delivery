@@ -1,12 +1,16 @@
-import React from 'react';
 import { MapPin, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-const StoreStatus: React.FC = () => {
-    // Mock: depois isso vem do backend ou contexto de admin
+export const StoreStatus = () => {
     const isOpen = true;
 
     return (
-        <div className="bg-white shadow-md rounded-xl p-4 flex flex-col gap-2 mb-4 border">
+        <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+            className="bg-white shadow-md rounded-xl p-4 flex flex-col gap-2 mb-4 border"
+        >
             <div className="flex items-center gap-2">
                 {isOpen ? (
                     <CheckCircle className="text-green-600 w-5 h-5" />
@@ -27,8 +31,6 @@ const StoreStatus: React.FC = () => {
                 <MapPin className="w-4 h-4 text-gray-500" />
                 Rua Raimundo de Farias Brito, 235 - Parque Rodoviario - Campos dos Goytacazes-RJ - 28010-117
             </div>
-        </div>
+        </motion.div>
     );
 };
-
-export default StoreStatus;

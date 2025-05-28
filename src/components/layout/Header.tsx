@@ -43,13 +43,12 @@ export function Header() {
 
 
           {/* Desktop Menu */}
+
           <nav className="hidden md:flex items-center space-x-8">
             <Link to="/" className="text-gray-800 hover:text-purple-600 transition-colors">
               Home
             </Link>
-            <Link to="/#products" className="text-gray-800 hover:text-purple-600 transition-colors">
-              Produtos
-            </Link>
+
             {user?.isAdmin && (
               <Link to="/admin" className="text-gray-800 hover:text-purple-600 transition-colors">
                 Dashboard
@@ -113,9 +112,7 @@ export function Header() {
               <Link to="/" className="text-gray-800 py-2 border-b border-gray-100">
                 Home
               </Link>
-              <Link to="/#products" className="text-gray-800 py-2 border-b border-gray-100">
-                Produtos
-              </Link>
+
               {user?.isAdmin && (
                 <Link to="/admin" className="text-gray-800 py-2 border-b border-gray-100">
                   Dashboard

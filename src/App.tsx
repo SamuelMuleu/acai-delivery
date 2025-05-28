@@ -5,7 +5,7 @@ import ProductPage from './pages/ProductPage';
 import CheckoutPage from './pages/CheckoutPage';
 import TrackingPage from './pages/TrackingPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminLogin from './pages/admin/AdminLogin';
+import { AdminLogin } from './pages/admin/AdminLogin';
 import { ProductsProvider } from './contexts/ProductsContext';
 import { CartProvider } from './contexts/CartContext';
 import { OrderProvider } from './contexts/OrderContext';

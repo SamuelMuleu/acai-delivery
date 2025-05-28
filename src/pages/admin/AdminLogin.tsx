@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
-const AdminLogin: React.FC = () => {
+export const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -13,18 +13,19 @@ const AdminLogin: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (!email || !password) {
       setError('Por favor, preencha todos os campos.');
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       await login(email, password);
       navigate('/admin');
-    } catch (err) {
+    } catch (error) {
+      console.log(error)
       setError('Email ou senha incorretos.');
       setLoading(false);
     }
@@ -36,7 +37,7 @@ const AdminLogin: React.FC = () => {
         <div className="bg-purple-600 py-6 px-8 text-white text-center">
           <h1 className="text-2xl font-bold">Área Administrativa</h1>
         </div>
-        
+
         <div className="p-8">
           <form onSubmit={handleSubmit}>
             {error && (
@@ -44,7 +45,7 @@ const AdminLogin: React.FC = () => {
                 {error}
               </div>
             )}
-            
+
             <div className="mb-4">
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                 Email
@@ -59,7 +60,7 @@ const AdminLogin: React.FC = () => {
                 required
               />
             </div>
-            
+
             <div className="mb-6">
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                 Senha
@@ -74,7 +75,7 @@ const AdminLogin: React.FC = () => {
                 required
               />
             </div>
-            
+
             <button
               type="submit"
               disabled={loading}
@@ -96,4 +97,3 @@ const AdminLogin: React.FC = () => {
   );
 };
 
-export default AdminLogin;

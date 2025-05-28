@@ -3,24 +3,25 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { useProducts, ComplementInput } from '../../contexts/ProductsContext';
 import axios from 'axios';
+import { api } from '../../contexts/api/api';
 
 
 
 export const ComplementForm = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  // As funções createComplement e updateComplement são obtidas do contexto
+
   const { getComplementById, createComplement, updateComplement } = useProducts();
 
   const [formData, setFormData] = useState<ComplementInput>({
     nome: '',
-    tipo: 'fruta', // agora o TS entende que é válido
+    tipo: 'fruta',
     preco: 0,
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null); // Para exibir erros da API
+  const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -28,7 +29,7 @@ export const ComplementForm = () => {
       if (complement) {
         setFormData({ ...complement });
       } else {
-        axios.get(`/complementos/${id}`)
+        api.get(`/complementos/${id}`)
           .then(res => setFormData(res.data))
           .catch(err => {
             console.error('Complemento não encontrado:', err);
@@ -38,14 +39,14 @@ export const ComplementForm = () => {
     }
   }, [id, getComplementById, navigate]);
 
-  // Lida com a mudança nos campos do formulário
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    // Converte o valor do preço para número
+
     setFormData(prev => ({ ...prev, [name]: name === 'preco' ? parseFloat(value) || 0 : value }));
   };
 
-  // Valida os campos do formulário
+
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
@@ -55,34 +56,34 @@ export const ComplementForm = () => {
     if (formData.preco < 0) {
       newErrors.preco = 'Preço não pode ser negativo';
     }
-    // O tipo já tem um valor padrão, então a validação pode ser menos rigorosa aqui.
+
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Lida com a submissão do formulário
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Valida o formulário antes de submeter
+
     if (!validateForm()) {
-      setApiError(null); // Limpa qualquer erro da API se houver erros de validação locais
+      setApiError(null);
       return;
     }
 
     setIsSubmitting(true);
-    setApiError(null); // Limpa erros anteriores da API antes de uma nova tentativa
+    setApiError(null);
 
     try {
       if (id) {
-        // Se há um ID, está editando um complemento existente
+
         await updateComplement(id, formData);
       } else {
-        // Se não há ID, está criando um novo complemento
+
         await createComplement(formData);
       }
-      // Navega de volta para a lista de complementos após o sucesso
+
       navigate('/admin/complements');
     } catch (error: unknown) {
       console.error('Failed to save complement:', error);
@@ -95,11 +96,10 @@ export const ComplementForm = () => {
         setApiError('Erro desconhecido ao salvar complemento. Tente novamente.');
       }
     } finally {
-      // Sempre define isSubmitting como false, independentemente do sucesso ou falha
+
       setIsSubmitting(false);
     }
   };
-
 
 
   return (
@@ -128,7 +128,7 @@ export const ComplementForm = () => {
                 type="text"
                 id="nome"
                 name="nome"
-                value={formData.nome}
+                value={formData.nome || ''}
                 onChange={handleChange}
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${errors.nome ? 'border-red-500' : 'border-gray-300'
                   }`}
@@ -150,7 +150,8 @@ export const ComplementForm = () => {
                   type="number"
                   id="preco"
                   name="preco"
-                  value={formData.preco}
+                  value={formData.preco !== undefined ? formData.preco : 0}
+
                   onChange={handleChange}
                   className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${errors.preco ? 'border-red-500' : 'border-gray-300'
                     }`}

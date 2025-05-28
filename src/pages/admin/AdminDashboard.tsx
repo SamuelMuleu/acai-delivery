@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingBag, LogOut, Users } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, LogOut } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import OrdersList from '../../components/admin/OrdersList';
-import ProductsList from '../../components/admin/ProductsList';
-import ProductForm from '../../components/admin/ProductForm';
+import { ProductsList } from '../../components/admin/ProductsList';
+import { ProductForm } from '../../components/admin/ProductForm';
 import { ComplementsList } from '../../components/admin/ComplementsList';
 import { ComplementForm } from '../../components/admin/ComplementForm';
 import OrderDetails from '../../components/admin/OrderDetails';
@@ -88,11 +88,7 @@ const AdminDashboard: React.FC = () => {
               text="Complementos"
               path="/admin/complements"
             />
-            <NavItem
-              icon={<Users size={20} />}
-              text="Usuários"
-              path="/admin/users"
-            />
+
             <NavItem
               icon={<LogOut size={20} />}
               text="Sair"
@@ -129,11 +125,7 @@ const AdminDashboard: React.FC = () => {
               text="Complementos"
               path="/admin/complements"
             />
-            <NavItem
-              icon={<Users size={20} />}
-              text="Usuários"
-              path="/admin/users"
-            />
+
           </nav>
 
           <div className="p-5 border-t">

@@ -48,7 +48,7 @@ interface ProductsContextType {
   createProduct: (data: FormData) => Promise<Product>;
   updateProduct: (id: string, data: FormData) => Promise<Product>;
   deleteProduct: (id: string) => void;
-
+  fetchProducts: () => Promise<void>;
   getComplements: () => Complement[] | undefined;
   getComplementById: (id: string) => Complement | undefined;
   createComplement: (complement: ComplementInput) => Promise<Complement>;
@@ -77,14 +77,7 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const fetchProducts = async () => {
-    try {
-      const response = await api.get('/produtos');
-      setProducts(response.data);
-    } catch (error) {
-      console.error('Erro ao buscar Produtos:', error);
-    }
-  }
+
 
 
   useEffect(() => {
@@ -95,6 +88,17 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
 
     return () => clearTimeout(timer);
   }, []);
+
+
+
+  const fetchProducts = async () => {
+    try {
+      const response = await api.get('/produtos');
+      setProducts(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar Produtos:', error);
+    }
+  }
 
   const getProductById = (id: string) => {
     return products.find(product => product.id === id);
@@ -130,7 +134,6 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
         console.error('Erro ao deletar produto:', error);
       });
 
-    // Atualiza o estado local para remover o produto deletado
     setProducts(prev => prev.filter(product => product.id !== id));
 
 
@@ -186,7 +189,8 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
       getComplementById,
       createComplement,
       updateComplement,
-      deleteComplement
+      deleteComplement,
+      fetchProducts,
     }}>
       {children}
     </ProductsContext.Provider>

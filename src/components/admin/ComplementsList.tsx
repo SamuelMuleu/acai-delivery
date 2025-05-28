@@ -26,10 +26,13 @@ export const ComplementsList = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Gerenciar Complementos</h1>
+        <h1 className="text-xl flex justify-center font-bold w-96 text-gray-800">Gerenciar Complementos</h1>
+      </div>
+      <div className='flex justify-center'>
+
         <button
           onClick={() => navigate('/admin/complements/new')}
-          className="flex items-center bg-purple-600 text-white hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors"
+          className="flex items-center bg-purple-600  text-white hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors"
         >
           <Plus size={18} className="mr-2" />
           Novo Complemento
