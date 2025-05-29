@@ -123,7 +123,7 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     };
 
     try {
-      await axios.post(`${BASE_URL}`, {
+      await axios.post(`${BASE_URL}/pedidos`, {
         nomeCliente: nomeCliente,
         telefone: telefone,
         endereco: address,
