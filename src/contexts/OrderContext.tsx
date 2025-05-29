@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useProducts } from './ProductsContext';
-import axios from 'axios';
-import { BASE_URL } from './api/api';
+
+import { api } from './api/api';
 
 
 interface OrderItem {
@@ -123,7 +123,7 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     };
 
     try {
-      await axios.post(`${BASE_URL}/pedidos`, {
+      await api.post('/pedidos', {
         nomeCliente: nomeCliente,
         telefone: telefone,
         endereco: address,
