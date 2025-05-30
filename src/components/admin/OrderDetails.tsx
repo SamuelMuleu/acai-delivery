@@ -11,7 +11,6 @@ const OrderDetails: React.FC = () => {
   const [order, setOrder] = useState<Order | null>(null);
 
 
-  console.log(order)
   useEffect(() => {
     if (id) {
       const orderData = getOrderById(id);

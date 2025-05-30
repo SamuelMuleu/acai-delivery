@@ -9,16 +9,16 @@ const OrdersList: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    loadOrders();
-  }, []);
-
   const loadOrders = () => {
     setIsLoading(true);
     const allOrders = getAllOrders();
     setOrders(allOrders);
     setIsLoading(false);
   };
+
+  useEffect(() => {
+    loadOrders();
+  }, []);
 
   const handleStatusChange = (orderId: string, newStatus: string) => {
     updateOrderStatus(orderId, newStatus);
@@ -135,7 +135,7 @@ const OrdersList: React.FC = () => {
                           <option value="Saiu para entrega">Saiu para entrega</option>
                           <option value="Entregue">Entregue</option>
                         </select>
-                        
+
                         <button
                           onClick={() => navigate(`/admin/order/${order.id}`)}
                           className="text-purple-600 hover:text-purple-800"

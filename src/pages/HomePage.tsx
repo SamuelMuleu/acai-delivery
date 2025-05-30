@@ -1,10 +1,9 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProductCard from '../components/products/ProductCard';
 import { useProducts } from '../contexts/ProductsContext';
 import { StoreStatus } from '../components/layout/StoreStatus';
 
-const HomePage: React.FC = () => {
+export const HomePage = () => {
   const { products, loading } = useProducts();
   const navigate = useNavigate();
 
@@ -33,4 +32,4 @@ const HomePage: React.FC = () => {
   );
 };
 
-export default HomePage;
+

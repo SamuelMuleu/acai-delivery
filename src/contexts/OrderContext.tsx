@@ -5,7 +5,7 @@ import { useProducts } from './ProductsContext';
 import { api } from './api/api';
 
 
-interface OrderItem {
+export interface OrderItem {
   productId: string;
   size: string;
   complements: string[];
@@ -108,7 +108,10 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       };
     });
 
-    const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+
+
+    const totalCalculadoLocalmente = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const trackingCode = generateTrackingCode();
 
     const newOrder: Order = {
@@ -119,7 +122,7 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       paymentMethod,
       changeFor: changeFor ?? null,
       status: 'Pendente',
-      total
+      total: totalCalculadoLocalmente
     };
 
     try {
@@ -128,15 +131,14 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         telefone: telefone,
         endereco: address,
         metodoPagamento: paymentMethod,
-        trocoPara: changeFor,
         produtos: items.map(item => ({
-          productId: item.productId,
+          produtoId: item.productId,
           tamanho: item.size,
           complementos: item.complements,
-          quantidade: item.quantity
         }))
       });
       setOrders(prev => [newOrder, ...prev]);
+      console.log(newOrder)
     } catch (error) {
       console.error('Erro ao enviar pedido para o backend:', error);
 
@@ -149,7 +151,15 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return orders.find(order => order.trackingCode === code) || null;
   };
 
-  const getOrderById = (id: string): Order | null => {
+  const getOrderById = async (id: string): Promise<Order> => {
+
+    await api.get(`/pedidos/${id}`)
+      .then(() => {
+        console.log('Produto deletado com sucesso');
+      })
+      .catch((error) => {
+        console.error('Erro ao deletar produto:', error);
+      });
     return orders.find(order => order.id === id) || null;
   };
 

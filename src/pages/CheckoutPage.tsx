@@ -7,7 +7,7 @@ import CartItem from '../components/cart/CartItem';
 import AddressForm from '../components/checkout/AddressForm';
 import PaymentMethod from '../components/checkout/PaymentMethod';
 
-const CheckoutPage: React.FC = () => {
+export const CheckoutPage = () => {
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
   const { createOrder } = useOrder();
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ const CheckoutPage: React.FC = () => {
   const [address, setAddress] = useState('');
   const [nomeCliente, setNomeCliente] = useState('');
   const [telefone, setTelefone] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'Pix' | 'Dinheiro' | 'Cartão'>('Pix');
+  const [paymentMethod, setPaymentMethod] = useState<'pix' | 'dinheiro' | 'cartão'>('pix');
   const [changeFor, setChangeFor] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
@@ -42,7 +42,7 @@ const CheckoutPage: React.FC = () => {
       errors.address = 'Endereço é obrigatório';
     }
 
-    if (paymentMethod === 'Dinheiro' && (!changeFor || changeFor <= 0)) {
+    if (paymentMethod === 'dinheiro' && (!changeFor || changeFor <= 0)) {
       errors.changeFor = 'Informe um valor válido para o troco';
     }
 
@@ -52,6 +52,17 @@ const CheckoutPage: React.FC = () => {
     }
 
     setIsSubmitting(true);
+
+    const getProcessedChangeFor = (value: string | number | null): number | undefined => {
+      if (value === null || value === '') {
+        return undefined;
+      }
+      if (typeof value === 'string') {
+        const num = parseFloat(value);
+        return isNaN(num) ? undefined : num;
+      }
+      return value;
+    };
 
     try {
       const trackingCode = await createOrder({
@@ -63,9 +74,9 @@ const CheckoutPage: React.FC = () => {
         })),
         address,
         paymentMethod,
-        changeFor: paymentMethod === 'Dinheiro' ? changeFor : null,
-        nomeCliente: nomeCliente, // <--- ADICIONE ESTA LINHA
-        telefone: telefone        // <--- ADICIONE ESTA LINHA
+        changeFor: paymentMethod === 'dinheiro' ? getProcessedChangeFor(changeFor) : undefined,
+        nomeCliente: nomeCliente,
+        telefone: telefone
       });
 
       clearCart();
@@ -184,26 +195,26 @@ const CheckoutPage: React.FC = () => {
                   id="pix"
                   label="Pix"
                   icon={<QrCode size={24} />}
-                  selected={paymentMethod === 'Pix'}
-                  onClick={() => setPaymentMethod('Pix')}
+                  selected={paymentMethod === 'pix'}
+                  onClick={() => setPaymentMethod('pix')}
                 />
                 <PaymentMethod
                   id="money"
                   label="Dinheiro"
                   icon={<Banknote size={24} />}
-                  selected={paymentMethod === 'Dinheiro'}
-                  onClick={() => setPaymentMethod('Dinheiro')}
+                  selected={paymentMethod === 'dinheiro'}
+                  onClick={() => setPaymentMethod('dinheiro')}
                 />
                 <PaymentMethod
                   id="card"
                   label="Cartão"
                   icon={<CreditCard size={24} />}
-                  selected={paymentMethod === 'Cartão'}
-                  onClick={() => setPaymentMethod('Cartão')}
+                  selected={paymentMethod === 'cartão'}
+                  onClick={() => setPaymentMethod('cartão')}
                 />
               </div>
 
-              {paymentMethod === 'Dinheiro' && (
+              {paymentMethod === 'dinheiro' && (
                 <div className="mb-4">
                   <label htmlFor="changeFor" className="block text-sm font-medium text-gray-700 mb-1">
                     Troco para
@@ -279,4 +290,3 @@ const CheckoutPage: React.FC = () => {
   );
 };
 
-export default CheckoutPage;

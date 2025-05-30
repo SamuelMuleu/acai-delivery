@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useOrder } from '../contexts/OrderContext';
+import { Order, PreparedItem, useOrder } from '../contexts/OrderContext';
 import OrderStatusTracker from '../components/orders/OrderStatusTracker';
 
-const TrackingPage: React.FC = () => {
+export const TrackingPage = () => {
   const { code } = useParams<{ code: string }>();
   const { getOrderByCode } = useOrder();
-  const [order, setOrder] = useState<any>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -50,31 +50,31 @@ const TrackingPage: React.FC = () => {
             <h1 className="text-3xl font-bold mb-2">Acompanhe seu pedido</h1>
             <div className="text-purple-200 text-lg">Código: {order.trackingCode}</div>
           </div>
-          
+
           <div className="p-8">
             <OrderStatusTracker currentStatus={order.status} />
-            
+
             <div className="mt-12 border-t border-gray-200 pt-8">
               <h2 className="text-xl font-semibold mb-4">Detalhes do Pedido</h2>
-              
+
               <div className="space-y-6">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-2">Itens</h3>
                   <div className="space-y-2">
-                    {order.items.map((item: any, index: number) => (
-                      <div key={index} className="flex justify-between">
+                    {order.items.map((item: PreparedItem) => (
+                      <div key={item.productId} className="flex justify-between">
                         <span>{item.quantity}x {item.name} ({item.size})</span>
                         <span className="font-medium">R$ {(item.price * item.quantity).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-2">Endereço de entrega</h3>
                   <p>{order.address}</p>
                 </div>
-                
+
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-2">Forma de pagamento</h3>
                   <p>{order.paymentMethod}</p>
@@ -82,14 +82,14 @@ const TrackingPage: React.FC = () => {
                     <p className="text-sm text-gray-500">Troco para: R$ {order.changeFor.toFixed(2)}</p>
                   )}
                 </div>
-                
+
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-2">Total</h3>
                   <p className="text-xl font-semibold">R$ {order.total.toFixed(2)}</p>
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-8 text-center">
               <Link
                 to="/"
@@ -105,4 +105,3 @@ const TrackingPage: React.FC = () => {
   );
 };
 
-export default TrackingPage;

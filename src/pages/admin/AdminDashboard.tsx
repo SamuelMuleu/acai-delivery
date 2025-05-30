@@ -9,7 +9,7 @@ import { ComplementsList } from '../../components/admin/ComplementsList';
 import { ComplementForm } from '../../components/admin/ComplementForm';
 import OrderDetails from '../../components/admin/OrderDetails';
 
-const AdminDashboard: React.FC = () => {
+export const AdminDashboard = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -157,5 +157,3 @@ const AdminDashboard: React.FC = () => {
     </div>
   );
 };
-
-export default AdminDashboard;
