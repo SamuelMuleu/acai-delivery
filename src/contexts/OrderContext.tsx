@@ -62,7 +62,7 @@ export interface Tamanho {
 interface OrderContextType {
   createOrder: (orderData: OrderData) => Promise<string>;
   getOrderByCode: (code: string) => Order | null;
-  getOrderById: (id: string) => Order | null;
+  getOrderById: (id: string) => Promise<Order | null>;
   getAllOrders: () => Order[];
   updateOrderStatus: (id: string, status: Order['status']) => void;
 }
@@ -138,7 +138,7 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }))
       });
       setOrders(prev => [newOrder, ...prev]);
-      console.log(newOrder)
+
     } catch (error) {
       console.error('Erro ao enviar pedido para o backend:', error);
 
@@ -151,15 +151,15 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return orders.find(order => order.trackingCode === code) || null;
   };
 
-  const getOrderById = async (id: string): Promise<Order> => {
+  const getOrderById = async (id: string): Promise<Order | null> => {
+try{
+  const response = await api.get(`/pedidos/${id}`);
+   
+setOrders(response.data)
 
-    await api.get(`/pedidos/${id}`)
-      .then(() => {
-        console.log('Produto deletado com sucesso');
-      })
-      .catch((error) => {
-        console.error('Erro ao deletar produto:', error);
-      });
+  }catch(error:unknown){
+    console.error('Erro ao buscar Produtos:', error);
+      };
     return orders.find(order => order.id === id) || null;
   };
 

@@ -15,7 +15,7 @@ export const CheckoutPage = () => {
   const [address, setAddress] = useState('');
   const [nomeCliente, setNomeCliente] = useState('');
   const [telefone, setTelefone] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'pix' | 'dinheiro' | 'cartão'>('pix');
+  const [paymentMethod, setPaymentMethod] = useState<'pix' | 'dinheiro' | 'cartao'>('pix');
   const [changeFor, setChangeFor] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
@@ -209,8 +209,8 @@ export const CheckoutPage = () => {
                   id="card"
                   label="Cartão"
                   icon={<CreditCard size={24} />}
-                  selected={paymentMethod === 'cartão'}
-                  onClick={() => setPaymentMethod('cartão')}
+                  selected={paymentMethod === 'cartao'}
+                  onClick={() => setPaymentMethod('cartao')}
                 />
               </div>
 

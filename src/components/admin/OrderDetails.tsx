@@ -12,10 +12,23 @@ const OrderDetails: React.FC = () => {
 
 
   useEffect(() => {
-    if (id) {
-      const orderData = getOrderById(id);
-      setOrder(orderData);
-    }
+    
+    const fetchOrderData = async () => {
+      if (id) {
+        try {
+          const data = await getOrderById(id); 
+          setOrder(data);                      
+        } catch (error) {
+          console.error("Erro ao buscar dados do pedido:", error);
+          setOrder(null);
+        }
+      } else {
+        setOrder(null); 
+      }
+    };
+  
+    fetchOrderData(); 
+  
   }, [id, getOrderById]);
 
   const handleStatusChange = (newStatus: Order['status']) => {

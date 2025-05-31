@@ -128,7 +128,7 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
   const deleteProduct = (id: string) => {
     api.delete(`/produtos/${id}`)
       .then(() => {
-        console.log('Produto deletado com sucesso');
+
       })
       .catch((error) => {
         console.error('Erro ao deletar produto:', error);
