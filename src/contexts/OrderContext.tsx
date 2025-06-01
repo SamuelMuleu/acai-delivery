@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
+import { v4 as uuidv4 } from 'uuid';
 import { useProducts } from "./ProductsContext";
-
 import { api } from "./api/api";
 
 export interface OrderItem {
   productId: string;
   size: string;
-  complements: string[];
+  complements: number[];
   quantity: number;
 }
 
@@ -23,12 +23,13 @@ export interface PreparedItem {
   image: string;
   size: string;
   price: number;
-  complements: string[];
+  complements: number[];
   quantity: number;
 }
 
 export interface Order {
   id: string;
+  trackingCode?: string;
   nomeCliente: string;
   telefone: string;
   endereco: string;
@@ -46,14 +47,12 @@ export interface Order {
 }
 
 interface OrderData {
-  id:string;
   products: OrderItem[];
-  endereco: string;
+  endereco: string; 
   metodoPagamento: string;
   changeFor?: number;
   nomeCliente: string;
   telefone: string;
-  criadoEm:string;
 }
 
 export interface Tamanho {
@@ -86,91 +85,101 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({
 
   const createOrder = async (orderData: OrderData): Promise<string> => {
     const {
-      products: orderItems,
-      id,
-      endereco,
-      metodoPagamento,
+      products: orderItemsInput,
+      endereco: addressInput, 
+      metodoPagamento: paymentMethodInput,
+      changeFor: changeForInput,
       nomeCliente,
       telefone,
-      criadoEm,
     } = orderData;
-    const items = orderItems.map((item: OrderItem): PreparedItem => {
-      const product = getProductById(item.productId) as ProductFromContext;
 
+    const processedItems = orderItemsInput.map((item: OrderItem): PreparedItem => {
+      const product = getProductById(item.productId) as ProductFromContext;
       if (!product) {
         throw new Error(`Produto com ID ${item.productId} não encontrado.`);
       }
-
-      const size = product.tamanhos.find((t: Tamanho) => t.nome === item.size);
-
-      if (!size) {
+      const sizeInfo = product.tamanhos.find((t: Tamanho) => t.nome === item.size);
+      if (!sizeInfo) {
         throw new Error(
           `Tamanho '${item.size}' não encontrado para o produto '${product.nome}'.`
         );
       }
-
       return {
         productId: item.productId,
         name: product.nome,
         image: product.imagem,
         size: item.size,
-        price: size.preco,
+        price: sizeInfo.preco,
         complements: item.complements,
         quantity: item.quantity,
       };
     });
 
-    const trackingCode = generateTrackingCode();
+    const orderTrackingCode = generateTrackingCode();
+    const orderId = uuidv4();
+    const orderCreationDate = new Date().toISOString();
+    const orderTotal = processedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
     const newOrder: Order = {
-      id,
+      id: orderId,
+      trackingCode: orderTrackingCode,
       nomeCliente,
-      endereco,
-      criadoEm,
-      metodoPagamento,
       telefone,
+      endereco: addressInput,
+      metodoPagamento: paymentMethodInput,
+      criadoEm: orderCreationDate,
       status: "pendente",
+      items: processedItems,
+      total: orderTotal,
+      changeFor: changeForInput ?? undefined,
     };
 
     try {
       await api.post("/pedidos", {
-        nomeCliente: nomeCliente,
-        telefone: telefone,
-        endereco: endereco,
-        metodoPagamento: metodoPagamento,
-        produtos: items.map((item) => ({
-          produtoId: item.productId,
+        nomeCliente: newOrder.nomeCliente,
+        telefone: newOrder.telefone,
+        endereco: newOrder.endereco,
+        metodoPagamento: newOrder.metodoPagamento,
+        // criadoEm: newOrder.criadoEm, // O backend geralmente define isso
+        // status: newOrder.status, // O backend geralmente define o status inicial
+        // trackingCode: newOrder.trackingCode, // Se o backend precisar/gerar
+        // total: newOrder.total, // Se o backend calcular ou precisar
+        // changeFor: newOrder.changeFor, // Se o backend precisar
+        produtos: newOrder.items?.map((item) => ({
+          produtoId: parseInt(item.productId, 10), // Convertido para número
           tamanho: item.size,
-          complementos: item.complements,
+         complementos: item.complements, 
+          // quantidade: item.quantity, // Se o backend esperar
+          // preco: item.price, // Se o backend esperar
         })),
       });
       setOrders((prev) => [newOrder, ...prev]);
     } catch (error) {
       console.error("Erro ao enviar pedido para o backend:", error);
+      throw error;
     }
 
-    return trackingCode;
+    return newOrder.trackingCode || newOrder.id;
   };
 
   const getOrderByCode = (code: string): Order | null => {
-    return orders.find((order) => order.id === code) || null;
+    return orders.find((order) => order.trackingCode === code || order.id === code) || null;
   };
 
   const getOrderById = async (id: string): Promise<Order | null> => {
     try {
       const response = await api.get(`/pedidos/${id}`);
-
-      setOrders(response.data);
+      return response.data as Order;
     } catch (error: unknown) {
-      console.error("Erro ao buscar Produtos:", error);
+      console.error("Erro ao buscar Pedido por ID:", error);
+      return null;
     }
-    return orders.find((order) => order.id === id) || null;
   };
 
   const fetchOrders = async () => {
     try {
       const response = await api.get("/pedidos");
-      setOrders(response.data);
+      setOrders(response.data as Order[]);
     } catch (error) {
       console.error("Erro ao buscar Pedidos:", error);
     }
@@ -180,10 +189,16 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({
     return orders;
   };
 
-  const updateOrderStatus = (id: string, status: Order["status"]) => {
-    setOrders((prev) =>
-      prev.map((order) => (order.id === id ? { ...order, status } : order))
-    );
+  const updateOrderStatus = async (id: string, status: Order["status"]) => {
+    try {
+      // Adicionar chamada à API para atualizar o status no backend
+      // await api.patch(`/pedidos/${id}/status`, { status });
+      setOrders((prev) =>
+        prev.map((order) => (order.id === id ? { ...order, status } : order))
+      );
+    } catch (error) {
+      console.error("Erro ao atualizar status do pedido:", error);
+    }
   };
 
   return (

@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 
 interface ComplementsListProps {
   complements: Array<{
-    id: string;
+    id: number;
     nome: string;
     tipo: string;
   }>;
-  selectedComplements: string[];
-  toggleComplement: (id: string) => void;
+  selectedComplements: number[];
+  toggleComplement: (id: number) => void;
 }
 
 
@@ -55,7 +55,7 @@ export const ComplementsList = ({
     }
   }, [warnings]);
 
-  const handleToggle = (id: string, tipo: string) => {
+  const handleToggle = (id: number, tipo: string) => {
     const group = complementsByType[tipo];
     const isSelected = selectedComplements.includes(id);
 

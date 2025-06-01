@@ -2,16 +2,16 @@ import React from 'react';
 import { Check } from 'lucide-react';
 
 interface OrderStatusTrackerProps {
-  currentStatus: 'Pendente' | 'Em Preparo' | 'Pronto' | 'Saiu para entrega' | 'Entregue';
+  currentStatus: 'pendente' | 'em preparo' | 'pronto' | 'saiu para entrega' | 'entregue';
 }
 
 const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({ currentStatus }) => {
   const statuses = [
-    { key: 'Pendente', label: 'Pendente' },
-    { key: 'Em Preparo', label: 'Em Preparo' },
-    { key: 'Pronto', label: 'Pronto' },
-    { key: 'Saiu para entrega', label: 'Saiu para entrega' },
-    { key: 'Entregue', label: 'Entregue' }
+    { key: 'pendente', label: 'Pendente' },
+    { key: 'em Preparo', label: 'Em Preparo' },
+    { key: 'pronto', label: 'Pronto' },
+    { key: 'saiu para entrega', label: 'Saiu para entrega' },
+    { key: 'entregue', label: 'Entregue' }
   ];
   
   const currentStep = statuses.findIndex(status => status.key === currentStatus);
@@ -19,15 +19,15 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({ currentStatus }
   // Get a message based on the current status
   const getMessage = () => {
     switch (currentStatus) {
-      case 'Pendente':
+      case 'pendente':
         return 'Seu pedido foi recebido e está aguardando confirmação.';
-      case 'Em Preparo':
+      case 'em preparo':
         return 'Nossos chefs estão preparando seu delicioso açaí!';
-      case 'Pronto':
+      case 'pronto':
         return 'Seu pedido está pronto e será enviado em breve.';
-      case 'Saiu para entrega':
+      case 'saiu para entrega':
         return 'O entregador está a caminho com seu pedido!';
-      case 'Entregue':
+      case 'entregue':
         return 'Seu pedido foi entregue. Bom apetite!';
       default:
         return '';

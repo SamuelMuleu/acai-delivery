@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { Order, PreparedItem, useOrder } from '../../contexts/OrderContext';
 import OrderStatusTracker from '../orders/OrderStatusTracker';
+import { div } from 'framer-motion/client';
 
 const OrderDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -64,7 +65,7 @@ const OrderDetails: React.FC = () => {
           <div className="flex flex-col md:flex-row md:justify-between md:items-center">
             <div>
               <h1 className="text-2xl font-bold text-gray-800">
-                Pedido #{order.trackingCode}
+                Pedido #{order.id}
               </h1>
               <p className="text-gray-500 mt-1">
                 Data: {new Date().toLocaleDateString('pt-BR')}
@@ -99,7 +100,7 @@ const OrderDetails: React.FC = () => {
               <div className="bg-gray-50 rounded-lg p-4">
                 <h3 className="font-medium mb-2">Itens</h3>
                 <div className="space-y-3">
-                  {order.items.map((item: PreparedItem, index: number) => (
+                  {order?  order.items?.map((item: PreparedItem, index: number) => (
                     <div key={index} className="flex justify-between">
                       <div>
                         <div className="font-medium">{item.quantity}x {item.name} ({item.size})</div>
@@ -113,13 +114,14 @@ const OrderDetails: React.FC = () => {
                         R$ {(item.price * item.quantity).toFixed(2)}
                       </div>
                     </div>
-                  ))}
+                  )):<div></div>}
                 </div>
+
 
                 <div className="mt-4 pt-3 border-t border-gray-200">
                   <div className="flex justify-between font-bold">
                     <span>Total</span>
-                    <span>R$ {order.total.toFixed(2)}</span>
+                    <span>R$ {order.total?.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -130,13 +132,13 @@ const OrderDetails: React.FC = () => {
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="mb-4">
                   <h3 className="font-medium mb-1">Endereço de Entrega</h3>
-                  <p className="text-gray-700">{order.address}</p>
+                  <p className="text-gray-700">{order.endereco}</p>
                 </div>
 
                 <div>
                   <h3 className="font-medium mb-1">Método de Pagamento</h3>
-                  <p className="text-gray-700">{order.paymentMethod}</p>
-                  {order.paymentMethod === 'Dinheiro' && order.changeFor && (
+                  <p className="text-gray-700">{order.metodoPagamento}</p>
+                  {order.metodoPagamento === 'Dinheiro' && order.changeFor && (
                     <p className="text-gray-500 text-sm">Troco para: R$ {order.changeFor.toFixed(2)}</p>
                   )}
                 </div>
