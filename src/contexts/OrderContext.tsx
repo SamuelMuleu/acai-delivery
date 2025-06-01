@@ -1,9 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { useProducts } from './ProductsContext';
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import { useProducts } from "./ProductsContext";
 
-import { api } from './api/api';
-
+import { api } from "./api/api";
 
 export interface OrderItem {
   productId: string;
@@ -12,13 +10,11 @@ export interface OrderItem {
   quantity: number;
 }
 
-
 interface ProductFromContext {
   id: string;
   nome: string;
   imagem: string;
   tamanhos: Tamanho[];
-
 }
 
 export interface PreparedItem {
@@ -31,45 +27,55 @@ export interface PreparedItem {
   quantity: number;
 }
 
-
 export interface Order {
   id: string;
-  trackingCode: string;
-  items: PreparedItem[];
-  address: string;
-  paymentMethod: string;
-  changeFor: number | null;
-  status: 'Pendente' | 'Em Preparo' | 'Pronto' | 'Saiu para entrega' | 'Entregue';
-  total: number;
+  nomeCliente: string;
+  telefone: string;
+  endereco: string;
+  metodoPagamento: string;
+  criadoEm: string;
+  status:
+    | "pendente"
+    | "em preparo"
+    | "pronto"
+    | "saiu para entrega"
+    | "entregue";
+  items?: PreparedItem[];
+  total?: number;
+  changeFor?: number;
 }
 
 interface OrderData {
+  id:string;
   products: OrderItem[];
-  address: string;
-  paymentMethod: string;
+  endereco: string;
+  metodoPagamento: string;
   changeFor?: number;
   nomeCliente: string;
   telefone: string;
+  criadoEm:string;
 }
 
 export interface Tamanho {
   nome: string;
   preco: number;
-
 }
 
-
 interface OrderContextType {
+  orders: Order[];
   createOrder: (orderData: OrderData) => Promise<string>;
   getOrderByCode: (code: string) => Order | null;
   getOrderById: (id: string) => Promise<Order | null>;
   getAllOrders: () => Order[];
-  updateOrderStatus: (id: string, status: Order['status']) => void;
+  fetchOrders: () => Promise<void>;
+  updateOrderStatus: (id: string, status: Order["status"]) => void;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
-export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const OrderProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const { getProductById } = useProducts();
   const [orders, setOrders] = useState<Order[]>([]);
 
@@ -78,23 +84,29 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return `PED${randomNum}`;
   };
 
-
   const createOrder = async (orderData: OrderData): Promise<string> => {
-    const { products: orderItems, address, paymentMethod, changeFor, nomeCliente, telefone } = orderData;
+    const {
+      products: orderItems,
+      id,
+      endereco,
+      metodoPagamento,
+      nomeCliente,
+      telefone,
+      criadoEm,
+    } = orderData;
     const items = orderItems.map((item: OrderItem): PreparedItem => {
-
       const product = getProductById(item.productId) as ProductFromContext;
 
       if (!product) {
-
         throw new Error(`Produto com ID ${item.productId} não encontrado.`);
       }
 
       const size = product.tamanhos.find((t: Tamanho) => t.nome === item.size);
 
-
       if (!size) {
-        throw new Error(`Tamanho '${item.size}' não encontrado para o produto '${product.nome}'.`);
+        throw new Error(
+          `Tamanho '${item.size}' não encontrado para o produto '${product.nome}'.`
+        );
       }
 
       return {
@@ -104,86 +116,88 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         size: item.size,
         price: size.preco,
         complements: item.complements,
-        quantity: item.quantity
+        quantity: item.quantity,
       };
     });
 
-
-
-
-    const totalCalculadoLocalmente = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const trackingCode = generateTrackingCode();
 
     const newOrder: Order = {
-      id: uuidv4(),
-      trackingCode,
-      items,
-      address,
-      paymentMethod,
-      changeFor: changeFor ?? null,
-      status: 'Pendente',
-      total: totalCalculadoLocalmente
+      id,
+      nomeCliente,
+      endereco,
+      criadoEm,
+      metodoPagamento,
+      telefone,
+      status: "pendente",
     };
 
     try {
-      await api.post('/pedidos', {
+      await api.post("/pedidos", {
         nomeCliente: nomeCliente,
         telefone: telefone,
-        endereco: address,
-        metodoPagamento: paymentMethod,
-        produtos: items.map(item => ({
+        endereco: endereco,
+        metodoPagamento: metodoPagamento,
+        produtos: items.map((item) => ({
           produtoId: item.productId,
           tamanho: item.size,
           complementos: item.complements,
-        }))
+        })),
       });
-      setOrders(prev => [newOrder, ...prev]);
-
+      setOrders((prev) => [newOrder, ...prev]);
     } catch (error) {
-      console.error('Erro ao enviar pedido para o backend:', error);
-
+      console.error("Erro ao enviar pedido para o backend:", error);
     }
 
     return trackingCode;
   };
 
   const getOrderByCode = (code: string): Order | null => {
-    return orders.find(order => order.trackingCode === code) || null;
+    return orders.find((order) => order.id === code) || null;
   };
 
   const getOrderById = async (id: string): Promise<Order | null> => {
-try{
-  const response = await api.get(`/pedidos/${id}`);
-   
-setOrders(response.data)
+    try {
+      const response = await api.get(`/pedidos/${id}`);
 
-  }catch(error:unknown){
-    console.error('Erro ao buscar Produtos:', error);
-      };
-    return orders.find(order => order.id === id) || null;
+      setOrders(response.data);
+    } catch (error: unknown) {
+      console.error("Erro ao buscar Produtos:", error);
+    }
+    return orders.find((order) => order.id === id) || null;
+  };
+
+  const fetchOrders = async () => {
+    try {
+      const response = await api.get("/pedidos");
+      setOrders(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar Pedidos:", error);
+    }
   };
 
   const getAllOrders = (): Order[] => {
     return orders;
   };
 
-
-  const updateOrderStatus = (id: string, status: Order['status']) => {
-    setOrders(prev =>
-      prev.map(order =>
-        order.id === id ? { ...order, status } : order
-      )
+  const updateOrderStatus = (id: string, status: Order["status"]) => {
+    setOrders((prev) =>
+      prev.map((order) => (order.id === id ? { ...order, status } : order))
     );
   };
 
   return (
-    <OrderContext.Provider value={{
-      createOrder,
-      getOrderByCode,
-      getOrderById,
-      getAllOrders,
-      updateOrderStatus
-    }}>
+    <OrderContext.Provider
+      value={{
+        orders,
+        createOrder,
+        getOrderByCode,
+        getOrderById,
+        getAllOrders,
+        updateOrderStatus,
+        fetchOrders,
+      }}
+    >
       {children}
     </OrderContext.Provider>
   );
@@ -192,7 +206,7 @@ setOrders(response.data)
 export const useOrder = (): OrderContextType => {
   const context = useContext(OrderContext);
   if (context === undefined) {
-    throw new Error('useOrder must be used within an OrderProvider');
+    throw new Error("useOrder must be used within an OrderProvider");
   }
   return context;
 };

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Package, ShoppingBag, LogOut } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import OrdersList from '../../components/admin/OrdersList';
+import {OrdersList} from '../../components/admin/OrdersList';
 import { ProductsList } from '../../components/admin/ProductsList';
 import { ProductForm } from '../../components/admin/ProductForm';
 import { ComplementsList } from '../../components/admin/ComplementsList';
