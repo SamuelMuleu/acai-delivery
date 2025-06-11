@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { Order, PreparedItem, useOrder } from '../../contexts/OrderContext';
 import OrderStatusTracker from '../orders/OrderStatusTracker';
-import { div } from 'framer-motion/client';
+
 
 const OrderDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();

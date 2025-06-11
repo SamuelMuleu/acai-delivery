@@ -26,12 +26,33 @@ export interface PreparedItem {
   complements: number[];
   quantity: number;
 }
+interface Produto {
+  nome: string;
+
+}
+interface Complemento {
+  nome: string;
+  tipo: string; 
+}
+
+interface ComplementoEscolhido {
+
+  complemento: Complemento;
+}
+interface ProdutoPedido {
+   id?: string | number;
+  quantity?: number;  
+  produto: Produto;
+  tamanho?: string;    
+  complementos?: ComplementoEscolhido[]; 
+}
 
 export interface Order {
   id: string;
   trackingCode?: string;
   nomeCliente: string;
   telefone: string;
+   produtos?: ProdutoPedido[]; 
   endereco: string;
   metodoPagamento: string;
   criadoEm: string;

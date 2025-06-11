@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Eye, RefreshCw } from "lucide-react";
 import { Order, useOrder } from "../../contexts/OrderContext";
 
+
+
+
 export const OrdersList = () => {
   const { orders: contextOrders, fetchOrders, updateOrderStatus } = useOrder();
   const [isLoading, setIsLoading] = useState(true);
@@ -44,7 +47,10 @@ export const OrdersList = () => {
         return "bg-gray-200 text-gray-700";
     }
   };
-
+ const capitalizeFirstLetter = (string?: string) => {
+    if (!string) return '';
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  };
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -92,10 +98,25 @@ export const OrdersList = () => {
                     <td className="px-6 py-4 whitespace-normal text-sm block md:table-cell text-right md:text-left border-b md:border-b-0">
                       <span className="font-semibold md:hidden mr-2">Itens:</span>
                       <div className="inline-block text-gray-700 md:text-left">
-                        {order.items && order.items.length > 0 ? (
-                          order.items.map((item, index) => (
-                            <div key={index}>
-                              {item.quantity}x {item.name} {item.size ? `(${item.size})` : ''}
+                        {order.produtos && order.produtos.length > 0 ? (
+                          order.produtos.map((produtoPedido, prodIndex) => (
+                            <div key={produtoPedido.id || prodIndex} className="mb-2 last:mb-0"> 
+                              <div className="font-medium">
+                                {produtoPedido.quantity || 1}x {produtoPedido.produto.nome} {produtoPedido.tamanho ? `(${produtoPedido.tamanho})` : ''}
+                              </div>
+                              {produtoPedido.complementos && produtoPedido.complementos.length > 0 && (
+                                <div className="pl-2 text-xs text-gray-600">
+                                  {produtoPedido.complementos.map((compEscolhido:any, compIndex:any) => (
+                                    <div key={compEscolhido.id || compIndex}> {/* Usa compEscolhido.id se disponível */}
+                                      {compEscolhido.complemento.tipo.toLowerCase() === 'fruta' ? (
+                                        <span>Batido com: {compEscolhido.complemento.nome}</span>
+                                      ) : (
+<span>{capitalizeFirstLetter(compEscolhido.complemento.tipo)}: {capitalizeFirstLetter(compEscolhido.complemento.nome)}</span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           ))
                         ) : (
