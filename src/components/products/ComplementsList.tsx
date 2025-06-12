@@ -85,7 +85,9 @@ export const ComplementsList = ({
       {Object.entries(complementsByType).map(([tipo, { items, selectedCount, limit }]) => (
         <div key={tipo} className="mb-4">
           <div className="flex justify-between items-center mb-2">
-            <h4 className="text-sm font-medium text-gray-700 uppercase tracking-wider">{tipo}</h4>
+          <h4 className="text-sm font-extrabold text-gray-700  tracking-wider">
+  {tipo.trim() === 'fruta' ? 'Batido com: ' : tipo}
+</h4>
             {limit > 0 && (
               <span className="text-xs text-gray-500">
                 {selectedCount}/{limit} selecionados
