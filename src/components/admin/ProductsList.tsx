@@ -56,8 +56,8 @@ export const ProductsList = () => {
 
                   src={product.imagem}
                   alt={product.nome}
-                  className="w-full h-full object-cover"
-                />
+  className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+/>
               </div>
 
               <div className="p-4">
