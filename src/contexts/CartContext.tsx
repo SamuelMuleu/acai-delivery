@@ -7,7 +7,7 @@ interface CartItem {
   image: string;
   size: string;
   price: number;
-  complements: string[];
+  complements: number[];
   quantity: number;
 }
 
@@ -48,7 +48,7 @@ export const CartProvider = ({ children }: AuthProviderProps) => {
       cartItem =>
         cartItem.productId === item.productId &&
         cartItem.size === item.size &&
-        JSON.stringify(cartItem.complements.sort()) === JSON.stringify(item.complements.sort())
+        JSON.stringify([...cartItem.complements].sort()) === JSON.stringify([...item.complements].sort())
     );
   };
 
@@ -56,10 +56,8 @@ export const CartProvider = ({ children }: AuthProviderProps) => {
     const existingItemIndex = findCartItemIndex(item);
 
     if (existingItemIndex !== -1) {
-
-      const newCart = [...cart];
-      newCart[existingItemIndex].quantity += item.quantity;
-      setCart(newCart);
+      // Copy the item instead of mutating state in place
+      setCart(cart.map((c, i) => (i === existingItemIndex ? { ...c, quantity: c.quantity + item.quantity } : c)));
     } else {
 
       setCart(prev => [...prev, item]);
@@ -80,9 +78,7 @@ export const CartProvider = ({ children }: AuthProviderProps) => {
     const existingItemIndex = findCartItemIndex(item);
 
     if (existingItemIndex !== -1) {
-      const newCart = [...cart];
-      newCart[existingItemIndex].quantity = quantity;
-      setCart(newCart);
+      setCart(cart.map((c, i) => (i === existingItemIndex ? { ...c, quantity: Math.max(1, quantity) } : c)));
     }
   };
 
