@@ -1,248 +1,114 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
-import { v4 as uuidv4 } from 'uuid';
-import { useProducts } from "./ProductsContext";
-import { api } from "./api/api";
+import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import { api } from './api/api';
+import type { OrderStatus } from '../lib/orders';
 
 export interface OrderItem {
   productId: string;
   size: string;
-  complements: number[];
+  complements: (string | number)[];
   quantity: number;
 }
 
-interface ProductFromContext {
-  id: string;
-  nome: string;
-  imagem: string;
-  tamanhos: Tamanho[];
-}
-
-export interface PreparedItem {
-  productId: string;
-  name: string;
-  image: string;
-  size: string;
-  price: number;
-  complements: number[];
-  quantity: number;
-}
-interface Produto {
-  nome: string;
-
-}
-interface Complemento {
-  nome: string;
-  tipo: string; 
-}
-
-interface ComplementoEscolhido {
-
-  complemento: Complemento;
-}
-interface ProdutoPedido {
-   id?: string | number;
-  quantity?: number;  
-  produto: Produto;
-  tamanho?: string;    
-  complementos?: ComplementoEscolhido[]; 
+/** Order item exactly as returned by the API (price already includes complements). */
+export interface ProdutoPedido {
+  id: number;
+  preco: number;
+  tamanho: string;
+  produto: { id: number; nome: string; imagem?: string | null };
+  complementos: { complemento: { id: number; nome: string; tipo: string; preco: number } }[];
 }
 
 export interface Order {
-  id: string;
-  trackingCode?: string;
+  id: number;
   nomeCliente: string;
-  telefone: string;
-   produtos?: ProdutoPedido[]; 
-  endereco: string;
-  metodoPagamento: string;
+  telefone?: string; // only returned to the admin
+  endereco?: string; // only returned to the admin
+  metodoPagamento: 'pix' | 'dinheiro' | 'cartao';
+  trocoPara?: number | null;
+  status: OrderStatus;
   criadoEm: string;
-  status:
-    | "pendente"
-    | "em preparo"
-    | "pronto"
-    | "saiu para entrega"
-    | "entregue";
-  items?: PreparedItem[];
-  total?: number;
-  changeFor?: number;
+  produtos: ProdutoPedido[];
+  total: number;
 }
 
 interface OrderData {
   products: OrderItem[];
-  endereco: string; 
-  metodoPagamento: string;
+  endereco: string;
+  metodoPagamento: Order['metodoPagamento'];
   changeFor?: number;
   nomeCliente: string;
   telefone: string;
 }
 
-export interface Tamanho {
-  nome: string;
-  preco: number;
-}
-
 interface OrderContextType {
   orders: Order[];
-  createOrder: (orderData: OrderData) => Promise<string>;
-  getOrderByCode: (code: string) => Order | null;
+  createOrder: (orderData: OrderData) => Promise<number>;
   getOrderById: (id: string) => Promise<Order | null>;
-  getAllOrders: () => Order[];
   fetchOrders: () => Promise<void>;
-  updateOrderStatus: (id: string, status: Order["status"]) => void;
+  updateOrderStatus: (id: number, status: OrderStatus) => Promise<void>;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
 
-export const OrderProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
-  const { getProductById } = useProducts();
+export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [orders, setOrders] = useState<Order[]>([]);
 
-  const generateTrackingCode = (): string => {
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-    return `PED${randomNum}`;
-  };
-
-  const createOrder = async (orderData: OrderData): Promise<string> => {
-    const {
-      products: orderItemsInput,
-      endereco: addressInput, 
-      metodoPagamento: paymentMethodInput,
-      changeFor: changeForInput,
-      nomeCliente,
-      telefone,
-    } = orderData;
-
-    const processedItems = orderItemsInput.map((item: OrderItem): PreparedItem => {
-      const product = getProductById(item.productId) as ProductFromContext;
-      if (!product) {
-        throw new Error(`Produto com ID ${item.productId} não encontrado.`);
-      }
-      const sizeInfo = product.tamanhos.find((t: Tamanho) => t.nome === item.size);
-      if (!sizeInfo) {
-        throw new Error(
-          `Tamanho '${item.size}' não encontrado para o produto '${product.nome}'.`
-        );
-      }
-      return {
-        productId: item.productId,
-        name: product.nome,
-        image: product.imagem,
-        size: item.size,
-        price: sizeInfo.preco,
-        complements: item.complements,
-        quantity: item.quantity,
-      };
+  /** Sends the order to the API (which calculates prices) and returns its id for tracking. */
+  const createOrder = async (orderData: OrderData): Promise<number> => {
+    const { data } = await api.post<Order>('/pedidos', {
+      nomeCliente: orderData.nomeCliente,
+      telefone: orderData.telefone,
+      endereco: orderData.endereco,
+      metodoPagamento: orderData.metodoPagamento,
+      trocoPara: orderData.metodoPagamento === 'dinheiro' ? orderData.changeFor : undefined,
+      produtos: orderData.products.map((item) => ({
+        produtoId: Number(item.productId),
+        tamanho: item.size,
+        quantidade: item.quantity,
+        complementos: item.complements.map(Number),
+      })),
     });
+    return data.id;
+  };
 
-    const orderTrackingCode = generateTrackingCode();
-    const orderId = uuidv4();
-    const orderCreationDate = new Date().toISOString();
-    const orderTotal = processedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-    const newOrder: Order = {
-      id: orderId,
-      trackingCode: orderTrackingCode,
-      nomeCliente,
-      telefone,
-      endereco: addressInput,
-      metodoPagamento: paymentMethodInput,
-      criadoEm: orderCreationDate,
-      status: "pendente",
-      items: processedItems,
-      total: orderTotal,
-      changeFor: changeForInput ?? undefined,
-    };
-
+  const getOrderById = useCallback(async (id: string) => {
     try {
-      await api.post("/pedidos", {
-        nomeCliente: newOrder.nomeCliente,
-        telefone: newOrder.telefone,
-        endereco: newOrder.endereco,
-        metodoPagamento: newOrder.metodoPagamento,
-        // criadoEm: newOrder.criadoEm, // O backend geralmente define isso
-        // status: newOrder.status, // O backend geralmente define o status inicial
-        // trackingCode: newOrder.trackingCode, // Se o backend precisar/gerar
-        // total: newOrder.total, // Se o backend calcular ou precisar
-        // changeFor: newOrder.changeFor, // Se o backend precisar
-        produtos: newOrder.items?.map((item) => ({
-          produtoId: parseInt(item.productId, 10), // Convertido para número
-          tamanho: item.size,
-         complementos: item.complements, 
-          // quantidade: item.quantity, // Se o backend esperar
-          // preco: item.price, // Se o backend esperar
-        })),
-      });
-      setOrders((prev) => [newOrder, ...prev]);
+      const { data } = await api.get<Order>(`/pedidos/${id}`);
+      return data;
     } catch (error) {
-      console.error("Erro ao enviar pedido para o backend:", error);
-      throw error;
-    }
-
-    return newOrder.trackingCode || newOrder.id;
-  };
-
-  const getOrderByCode = (code: string): Order | null => {
-    return orders.find((order) => order.trackingCode === code || order.id === code) || null;
-  };
-
-  const getOrderById = async (id: string): Promise<Order | null> => {
-    try {
-      const response = await api.get(`/pedidos/${id}`);
-      return response.data as Order;
-    } catch (error: unknown) {
-      console.error("Erro ao buscar Pedido por ID:", error);
+      console.error('Erro ao buscar pedido:', error);
       return null;
     }
-  };
+  }, []);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
+    const { data } = await api.get<Order[]>('/pedidos');
+    setOrders(data);
+  }, []);
+
+  const updateOrderStatus = async (id: number, status: OrderStatus) => {
+    const previous = orders;
+    setOrders((prev) => prev.map((order) => (order.id === id ? { ...order, status } : order)));
     try {
-      const response = await api.get("/pedidos");
-      setOrders(response.data as Order[]);
+      await api.patch(`/pedidos/${id}/status`, { status });
     } catch (error) {
-      console.error("Erro ao buscar Pedidos:", error);
-    }
-  };
-
-  const getAllOrders = (): Order[] => {
-    return orders;
-  };
-
-  const updateOrderStatus = async (id: string, status: Order["status"]) => {
-    try {
-      // Adicionar chamada à API para atualizar o status no backend
-      // await api.patch(`/pedidos/${id}/status`, { status });
-      setOrders((prev) =>
-        prev.map((order) => (order.id === id ? { ...order, status } : order))
-      );
-    } catch (error) {
-      console.error("Erro ao atualizar status do pedido:", error);
+      setOrders(previous);
+      throw error;
     }
   };
 
   return (
-    <OrderContext.Provider
-      value={{
-        orders,
-        createOrder,
-        getOrderByCode,
-        getOrderById,
-        getAllOrders,
-        updateOrderStatus,
-        fetchOrders,
-      }}
-    >
+    <OrderContext.Provider value={{ orders, createOrder, getOrderById, fetchOrders, updateOrderStatus }}>
       {children}
     </OrderContext.Provider>
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useOrder = (): OrderContextType => {
   const context = useContext(OrderContext);
   if (context === undefined) {
-    throw new Error("useOrder must be used within an OrderProvider");
+    throw new Error('useOrder must be used within an OrderProvider');
   }
   return context;
 };

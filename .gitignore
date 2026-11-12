@@ -23,3 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# chaves e segredos
+*.pem
+id_*
+*.key
+.env
+.env.*
+!.env.example

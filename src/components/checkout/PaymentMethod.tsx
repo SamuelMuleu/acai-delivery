@@ -10,19 +10,20 @@ interface PaymentMethodProps {
 
 const PaymentMethod: React.FC<PaymentMethodProps> = ({ id, label, icon, selected, onClick }) => {
   return (
-    <div
+    <button
+      type="button"
+      id={`payment-${id}`}
       onClick={onClick}
-      className={`border rounded-lg p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
-        selected 
-          ? 'border-purple-600 bg-purple-50 text-purple-700' 
-          : 'border-gray-200 hover:border-purple-300'
+      aria-pressed={selected}
+      className={`border rounded-lg p-4 flex flex-col items-center justify-center text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 ${
+        selected ? 'border-purple-600 bg-purple-50 text-purple-700' : 'border-gray-200 hover:border-purple-300'
       }`}
     >
-      <div className={`p-3 rounded-full mb-2 ${selected ? 'bg-purple-100' : 'bg-gray-100'}`}>
+      <span className={`p-3 rounded-full mb-2 ${selected ? 'bg-purple-100' : 'bg-gray-100'}`} aria-hidden>
         {icon}
-      </div>
+      </span>
       <span className="font-medium">{label}</span>
-    </div>
+    </button>
   );
 };
 

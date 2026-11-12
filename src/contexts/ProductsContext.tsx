@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { api } from "./api/api";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { api, apiErrorMessage } from "./api/api";
 
 export type ComplementInput = {
   nome: string;
@@ -41,17 +41,18 @@ export interface InitialProducts {
 interface ProductsContextType {
   products: Product[];
   loading: boolean;
+  error: string | null;
   complements: Complement[];
   getProductById: (id: string) => Product | undefined;
   createProduct: (data: FormData) => Promise<Product>;
   updateProduct: (id: string, data: FormData) => Promise<Product>;
-  deleteProduct: (id: string) => void;
+  deleteProduct: (id: string) => Promise<void>;
   fetchProducts: () => Promise<void>;
 
   getComplements: () => Complement[] | undefined;
   getComplementById: (id: string) => Complement | undefined;
   createComplement: (complement: ComplementInput) => Promise<Complement>;
-  updateComplement: (id: string, complement: Partial<Complement>) => void;
+  updateComplement: (id: string, complement: Partial<Complement>) => Promise<void>;
   deleteComplement: (id: string) => Promise<void>;
 }
 
@@ -65,7 +66,8 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
   const [complements, setComplements] = useState<Complement[]>([]);
 
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchComplements = async () => {
     try {
@@ -76,27 +78,22 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  useEffect(() => {
+  const fetchProducts = useCallback(async () => {
     setLoading(true);
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const fetchProducts = async () => {
+    setError(null);
     try {
       const response = await api.get("/produtos");
       setProducts(response.data);
-    } catch (error) {
-      console.error("Erro ao buscar Produtos:", error);
+    } catch (err) {
+      setError(apiErrorMessage(err, "Não foi possível carregar o cardápio."));
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
-
+  // API ids are numbers while route params are strings
   const getProductById = (id: string) => {
-    return products.find((product) => product.id === id);
+    return products.find((product) => String(product.id) === String(id));
   };
   const createProduct = async (data: FormData): Promise<Product> => {
     const response = await api.post("/produtos", data, {
@@ -121,15 +118,14 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
       throw error;
     }
   };
-  const deleteProduct = (id: string) => {
-    api
-      .delete(`/produtos/${id}`)
-      .then(() => {})
-      .catch((error) => {
-        console.error("Erro ao deletar produto:", error);
-      });
-
-    setProducts((prev) => prev.filter((product) => product.id !== id));
+  // Removes from the list only after the API confirms (products already ordered can't be deleted)
+  const deleteProduct = async (id: string) => {
+    try {
+      await api.delete(`/produtos/${id}`);
+      setProducts((prev) => prev.filter((product) => String(product.id) !== String(id)));
+    } catch (err) {
+      window.alert(apiErrorMessage(err, "Não foi possível remover o produto."));
+    }
   };
 
 
@@ -139,7 +135,7 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getComplementById = (id: string) => {
-    return complements.find((complement) => complement.id === id);
+    return complements.find((complement) => String(complement.id) === String(id));
   };
 
   const createComplement = async (complement: ComplementInput) => {
@@ -149,39 +145,39 @@ export function ProductsProvider({ children }: { children: React.ReactNode }) {
     return savedComplement;
   };
 
-  const updateComplement = (
-    id: string,
-    updatedComplement: Partial<Complement>
-  ) => {
-    setComplements((prev) =>
-      prev.map((complement) =>
-        complement.id === id
-          ? { ...complement, ...updatedComplement }
-          : complement
-      )
-    );
+  // Before, edits only changed local state and were lost on reload
+  const updateComplement = async (id: string, updatedComplement: Partial<Complement>) => {
+    const { nome, tipo, preco, ativo } = updatedComplement;
+    const { data } = await api.patch(`/complementos/${id}`, { nome, tipo, preco, ativo });
+    setComplements((prev) => prev.map((c) => (String(c.id) === String(id) ? data : c)));
   };
 
   const deleteComplement = async (id: string) => {
     try {
-      await api.delete(`/complementos/${id}`);
-      setComplements((prev) =>
-        prev?.filter((complement) => complement.id !== id)
-      );
+      const response = await api.delete(`/complementos/${id}`);
+      // A complement used in past orders is deactivated instead of deleted
+      if (response.status === 200 && response.data?.ativo === false) {
+        setComplements((prev) => prev.map((c) => (String(c.id) === String(id) ? { ...c, ativo: false } : c)));
+        window.alert("Este complemento já foi usado em pedidos, então foi desativado em vez de removido.");
+      } else {
+        setComplements((prev) => prev.filter((c) => String(c.id) !== String(id)));
+      }
     } catch (err) {
-      console.error("Erro ao deletar complemento:", err);
+      window.alert(apiErrorMessage(err, "Não foi possível remover o complemento."));
     }
   };
+
   useEffect(() => {
     fetchComplements();
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
 
   return (
     <ProductsContext.Provider
       value={{
         products,
         loading,
+        error,
         complements,
         getProductById,
         createProduct,

@@ -6,6 +6,7 @@ import { useOrder } from "../contexts/OrderContext";
 import CartItem from "../components/cart/CartItem";
 import AddressForm from "../components/checkout/AddressForm";
 import PaymentMethod from "../components/checkout/PaymentMethod";
+import { apiErrorMessage } from "../contexts/api/api";
 
 export const CheckoutPage = () => {
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
@@ -43,8 +44,9 @@ export const CheckoutPage = () => {
       errors.address = "Endereço é obrigatório";
     }
 
-    if (paymentMethod === "dinheiro" && (!changeFor || changeFor <= 0)) {
-      errors.changeFor = "Informe um valor válido para o troco";
+    // Change is optional (paying the exact amount), but must cover the total when informed
+    if (paymentMethod === "dinheiro" && changeFor !== null && changeFor < total) {
+      errors.changeFor = `O valor para troco deve ser de pelo menos R$ ${total.toFixed(2).replace(".", ",")}`;
     }
 
     if (Object.keys(errors).length > 0) {
@@ -68,7 +70,7 @@ export const CheckoutPage = () => {
     };
 
     try {
-      const trackingCode = await createOrder({
+      const orderId = await createOrder({
         products: cart.map((item) => ({
           productId: item.productId,
           size: item.size,
@@ -86,11 +88,10 @@ export const CheckoutPage = () => {
       });
 
       clearCart();
-      navigate(`/tracking/${trackingCode}`);
+      navigate(`/tracking/${orderId}`);
     } catch (error) {
-      console.error("Failed to create order:", error);
       setIsSubmitting(false);
-      setFormErrors({ general: "Erro ao criar pedido. Tente novamente." });
+      setFormErrors({ general: apiErrorMessage(error, "Erro ao criar pedido. Tente novamente.") });
     }
   };
 
@@ -242,7 +243,7 @@ export const CheckoutPage = () => {
                     htmlFor="changeFor"
                     className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    Troco para
+                    Troco para (deixe em branco se não precisar)
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
@@ -275,6 +276,11 @@ export const CheckoutPage = () => {
             </div>
 
             <div className="mt-6">
+              {formErrors.general && (
+                <p role="alert" className="mb-4 rounded-lg bg-red-50 p-4 text-red-600">
+                  {formErrors.general}
+                </p>
+              )}
               <button
                 type="submit"
                 disabled={isSubmitting}
